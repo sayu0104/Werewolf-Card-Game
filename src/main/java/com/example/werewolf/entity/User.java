@@ -34,6 +34,9 @@ public class User {//このクラス（User）を他のパッケージからで�
     @Column(unique = true, length = 255)//（重複不可、２５５文字以内）
     private String email;
 
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin = false;
+
     @Column(name = "created_at", nullable = false)//（名前は"created_at"、空欄不可）
     private LocalDateTime createdAt;
 
@@ -77,6 +80,14 @@ public class User {//このクラス（User）を他のパッケージからで�
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
  // ※ id と createdAt には「書き換え窓口（setter）」をあえて作っていない
