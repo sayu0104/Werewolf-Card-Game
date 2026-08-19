@@ -41,6 +41,7 @@
 | username | VARCHAR(50) | UNIQUE, NOT NULL | |
 | password_hash | VARCHAR(255) | NOT NULL | |
 | email | VARCHAR(255) | UNIQUE | |
+| is_admin | BOOLEAN | NOT NULL, DEFAULT false | 管理者フラグ（true=管理者、false=一般ユーザー） |
 | created_at | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | |
 
 ### 3.2 characters（キャラクターマスタ）
