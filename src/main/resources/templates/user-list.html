@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- xmlns:th="http://www.thymeleaf.org" は、th:xxx がThymeleaf用の拡張属性であることを示す名前空間宣言。
+     エディタの検証・補完のために書く慣習で、これを省略してもThymeleaf自体の動作には影響しない -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <!-- <title> はブラウザのタブに表示されるページタイトル -->
+    <title>ユーザー一覧</title>
+</head>
+<body>
+    <!-- <h1> は見出し（画面の一番大きなタイトル） -->
+    <h1>ユーザー一覧</h1>
+    <!-- <table> は表全体、border="1" は枠線をつける指定 -->
+    <table border="1">
+        <!-- <thead> は表の見出し行（列名）をまとめる部分 -->
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ユーザー名</th>
+                <th>メールアドレス</th>
+                <th>管理者</th>
+            </tr>
+        </thead>
+        <!-- <tbody> は表の中身（データ行）をまとめる部分 -->
+        <tbody>
+            <!--
+                th:each="user : ${users}" ＝ 繰り返し表示の指定。
+                ${users} は AdminUserController の model.addAttribute("users", ...) で
+                渡された、users テーブルの全件データ（Userのリスト）。
+                このリストから1件ずつ取り出して "user" という名前に入れながら、
+                <tr> 〜 </tr> を users の件数ぶん繰り返す。
+            -->
+            <tr th:each="user : ${users}">
+                <!--
+                    th:text="${user.id}" ＝ その<td>の中身を、user.getId() の値に置き換える指定。
+                    ${user.フィールド名} と書くと、対応するゲッター（getId など）が呼ばれて値が取れる。
+                -->
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.username}"></td>
+                <td th:text="${user.email}"></td>
+                <!-- ${user.isAdmin} は User.getIsAdmin() を呼び出し、true/false が表示される -->
+                <td th:text="${user.isAdmin}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
