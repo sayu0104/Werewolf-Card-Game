@@ -13,6 +13,7 @@
                 <th>名前</th>
                 <th>陣営</th>
                 <th>説明</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
@@ -28,8 +29,21 @@
                 <td th:text="${role.name}"></td>
                 <td th:text="${role.faction}"></td>
                 <td th:text="${role.description}"></td>
+                <td>
+                    <form th:action="@{/admin/roles/{id}/delete(id=${role.id})}" method="post">
+                        <button type="submit">削除</button>
+                    </form>
+                </td>
             </tr>
         </tbody>
     </table>
+
+    <h2>役職を追加</h2>
+    <form th:action="@{/admin/roles}" method="post">
+        <label>名前 <input type="text" name="name"></label>
+        <label>陣営 <input type="text" name="faction"></label>
+        <label>説明 <input type="text" name="description"></label>
+        <button type="submit">登録</button>
+    </form>
 </body>
 </html>
