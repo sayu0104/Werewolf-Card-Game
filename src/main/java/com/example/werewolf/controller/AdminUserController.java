@@ -4,6 +4,8 @@ import com.example.werewolf.repository.UserRepository;// 使う道具を持ち�
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller// 以下のクラスは、ブラウザからのアクセスを受け付ける窓口係(コントローラ)
 public class AdminUserController {// 公開クラス
@@ -22,5 +24,11 @@ public class AdminUserController {// 公開クラス
     public String listUsers(Model model) {// この処理の名前「ユーザーを一覧化する」（データを載せる"お盆"を受け取る）
         model.addAttribute("users", userRepository.findAll());// "users"の名札を付けてお盆に載せる(道具で全ユーザーを取得して)
         return "user-list";// user-listというテンプレート(お皿)で表示する
+    }
+
+    @PostMapping("/admin/users/{id}/delete")
+    public String deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return "redirect:/admin/users";
     }
 }
