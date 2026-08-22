@@ -4,6 +4,8 @@ import com.example.werewolf.repository.UserRepository;// 使う道具を持ち�
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller// 以下のクラスは、ブラウザからのアクセスを受け付ける窓口係(コントローラ)
 public class AdminUserController {// 公開クラス
@@ -22,5 +24,11 @@ public class AdminUserController {// 公開クラス
     public String listUsers(Model model) {// この処理の名前「ユーザーを一覧化する」（データを載せる"お盆"を受け取る）
         model.addAttribute("users", userRepository.findAll());// "users"の名札を付けてお盆に載せる(道具で全ユーザーを取得して)
         return "user-list";// user-listというテンプレート(お皿)で表示する
+    }
+
+    @PostMapping("/admin/users/{id}/delete")// このURLにPostで注文が来たら、下の処理を動かす
+    public String deleteUser(@PathVariable Long id) {// @PathVariable（"URLの"中の値（id）を取り出して、処理の中で使えるようにする（係））
+        userRepository.deleteById(id);// 倉庫番に.万能キット（JpaRepository）にある「deleteById（自動一件削除機能）」を使うと指示する（受け取ったidのユーザーを消す）
+        return "redirect:/admin/users";// 上の処理が終わったら、「/admin/users」にアクセスし直す（処理変更後の画面にするため）
     }
 }
