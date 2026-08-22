@@ -24,18 +24,18 @@ public class AdminRoleController {
 		return "role-list";// 上の処理が終わったらそれを表示する
 	}
 
-	@PostMapping("/admin/roles")
+	@PostMapping("/admin/roles")// このURLにpostで注文が来たら、以下の処理を行う
 	public String createRole(
-			@RequestParam String name,
+			@RequestParam String name,// フォームに入力された値を受け取る係　文字列で　nameという箱で受け取る
 			@RequestParam String faction,
 			@RequestParam String description) {
-		roleRepository.save(new Role(name, faction, description));
-		return "redirect:/admin/roles";
+		roleRepository.save(new Role(name, faction, description));// 役職の倉庫番に.保存させる（受け取った3つの値で、新しいRoleを作る（名前、派閥、説明））
+		return "redirect:/admin/roles";// 上の処理が終わったら、「/admin/roles」にアクセスし直す（処理変更後の画面にするため）
 	}
 
-	@PostMapping("/admin/roles/{id}/delete")
-	public String deleteRole(@PathVariable Long id) {
-		roleRepository.deleteById(id);
-		return "redirect:/admin/roles";
+	@PostMapping("/admin/roles/{id}/delete")// このURLにpostで注文が来たら、以下の処理を行う
+	public String deleteRole(@PathVariable Long id) {// @PathVariable（"URLの"中の値（id）を取り出して、処理の中で使えるようにする（係））
+		roleRepository.deleteById(id);// 倉庫番に.万能キット（JpaRepository）にある「deleteById（自動一件削除機能）」を使うと指示する（受け取ったidの役職を消す）
+		return "redirect:/admin/roles";// 上の処理が終わったら、「/admin/roles」にアクセスし直す（処理変更後の画面にするため）
 	}
 }
