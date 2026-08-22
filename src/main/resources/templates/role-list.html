@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>役職一覧</title>
+</head>
+<body>
+    <h1>役職一覧</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名前</th>
+                <th>陣営</th>
+                <th>説明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--
+                th:each="role : ${roles}" ＝ 繰り返し表示の指定。
+                ${roles} は AdminRoleController の model.addAttribute("roles", ...) で
+                渡された roles テーブルの全件データ（Roleのリスト）。
+                1件ずつ "role" という名前に入れながら、<tr>〜</tr> を件数ぶん繰り返す。
+            -->
+            <tr th:each="role : ${roles}">
+                <!-- th:text="${role.フィールド名}" ＝ 対応するゲッター（getId など）を呼び、その値で<td>の中身を置き換える -->
+                <td th:text="${role.id}"></td>
+                <td th:text="${role.name}"></td>
+                <td th:text="${role.faction}"></td>
+                <td th:text="${role.description}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
