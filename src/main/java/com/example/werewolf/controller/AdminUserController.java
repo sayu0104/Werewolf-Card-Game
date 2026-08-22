@@ -26,9 +26,9 @@ public class AdminUserController {// 公開クラス
         return "user-list";// user-listというテンプレート(お皿)で表示する
     }
 
-    @PostMapping("/admin/users/{id}/delete")
-    public String deleteUser(@PathVariable Long id) {
-        userRepository.deleteById(id);
-        return "redirect:/admin/users";
+    @PostMapping("/admin/users/{id}/delete")// このURLにPostで注文が来たら、下の処理を動かす
+    public String deleteUser(@PathVariable Long id) {// @PathVariable（"URLの"中の値（id）を取り出して、処理の中で使えるようにする（係））
+        userRepository.deleteById(id);// 倉庫番に.万能キット（JpaRepository）にある「deleteById（自動一件削除機能）」を使うと指示する（受け取ったidのユーザーを消す）
+        return "redirect:/admin/users";// 上の処理が終わったら、「/admin/users」にアクセスし直す（処理変更後の画面にするため）
     }
 }
