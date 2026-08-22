@@ -16,7 +16,14 @@
             </tr>
         </thead>
         <tbody>
+            <!--
+                th:each="role : ${roles}" ＝ 繰り返し表示の指定。
+                ${roles} は AdminRoleController の model.addAttribute("roles", ...) で
+                渡された roles テーブルの全件データ（Roleのリスト）。
+                1件ずつ "role" という名前に入れながら、<tr>〜</tr> を件数ぶん繰り返す。
+            -->
             <tr th:each="role : ${roles}">
+                <!-- th:text="${role.フィールド名}" ＝ 対応するゲッター（getId など）を呼び、その値で<td>の中身を置き換える -->
                 <td th:text="${role.id}"></td>
                 <td th:text="${role.name}"></td>
                 <td th:text="${role.faction}"></td>
