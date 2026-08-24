@@ -27,7 +27,9 @@ MVP（最小限の完成形）までのロードマップ。1行＝1Issue。完�
 
 ## フェーズ2：ゲームの土台データ（残りのテーブル）
 
-- [ ] ⬜ 残りのエンティティを作成 … games / game_players / cards / characters / votes / night_actions / suspicion_points / character_dialogues / suspicion_reasons など
+- [x] ✅ #25 土台エンティティ（Character / Game / Card）… 設計書 3.2 / 3.5 / 3.7（PR #26）
+- [x] ✅ #27 中間エンティティ（CharacterDialogue / GamePlayer）… 設計書 3.3 / 3.6（PR #28）
+- [ ] ⬜ 末端エンティティ（GamePlayerHand / CardUsageLog / NightAction / Vote / SuspicionPoint / SuspicionReason）
 - [ ] ⬜ 役職マスタ（5役職）の初期データ投入 … 村人・人狼・占い師・狩人・狂人
 - [ ] ⬜ カード等マスタの初期データ投入 … 基本カード・役職カードなど
 
