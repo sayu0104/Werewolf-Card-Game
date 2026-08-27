@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>カード一覧</title>
+</head>
+<body>
+    <h1>カード一覧</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名前</th>
+                <th>種類</th>
+                <th>必要役職ID</th>
+                <th>コスト</th>
+                <th>強制使用</th>
+                <th>レア</th>
+                <th>値</th>
+                <th>使用公開</th>
+                <th>説明</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="card : ${cards}">
+                <td th:text="${card.id}"></td>
+                <td th:text="${card.name}"></td>
+                <td th:text="${card.cardType}"></td>
+                <td th:text="${card.requiredRoleId}"></td>
+                <td th:text="${card.cost}"></td>
+                <td th:text="${card.isMandatory}"></td>
+                <td th:text="${card.isRare}"></td>
+                <td th:text="${card.value}"></td>
+                <td th:text="${card.isUsagePublic}"></td>
+                <td th:text="${card.description}"></td>
+                <td>
+                    <form th:action="@{/admin/cards/{id}/delete(id=${card.id})}" method="post">
+                        <button type="submit">削除</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>カードを追加</h2>
+    <form th:action="@{/admin/cards}" method="post">
+        <label>名前 <input type="text" name="name"></label>
+        <label>種類 <input type="text" name="cardType"></label>
+        <label>必要役職ID <input type="number" name="requiredRoleId"></label>
+        <label>コスト <input type="number" name="cost"></label>
+        <label>強制使用 <input type="checkbox" name="isMandatory" value="true"></label>
+        <label>レア <input type="checkbox" name="isRare" value="true"></label>
+        <label>値 <input type="number" name="value"></label>
+        <label>使用公開 <input type="checkbox" name="isUsagePublic" value="true" checked></label>
+        <label>説明 <input type="text" name="description"></label>
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>
