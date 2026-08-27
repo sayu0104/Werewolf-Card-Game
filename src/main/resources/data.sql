@@ -1,3 +1,4 @@
+--挿入する 無視して 〜の中へ rolesに （この3つの列に）             値は↓
 INSERT IGNORE INTO roles (name, faction, description) VALUES
     ('村人', '村人陣営', '専用カードを持つ'),
     ('人狼', '人狼陣営', '夜に襲撃を行う。複数人いる場合はお互いを認識する'),
