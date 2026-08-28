@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>キャラクター一覧</title>
+</head>
+<body>
+    <h1>キャラクター一覧</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名前</th>
+                <th>性格</th>
+                <th>判断の最適性</th>
+                <th>一貫性</th>
+                <th>騙す能力</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="character : ${characters}">
+                <td th:text="${character.id}"></td>
+                <td th:text="${character.name}"></td>
+                <td th:text="${character.personality}"></td>
+                <td th:text="${character.optimality}"></td>
+                <td th:text="${character.consistency}"></td>
+                <td th:text="${character.deceptionSkill}"></td>
+                <td>
+                    <form th:action="@{/admin/characters/{id}/delete(id=${character.id})}" method="post">
+                        <button type="submit">削除</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>キャラクターを追加</h2>
+    <form th:action="@{/admin/characters}" method="post">
+        <label>名前 <input type="text" name="name"></label>
+        <label>性格 <input type="text" name="personality"></label>
+        <label>判断の最適性（0〜100） <input type="number" name="optimality" min="0" max="100"></label>
+        <label>一貫性（0〜100） <input type="number" name="consistency" min="0" max="100"></label>
+        <label>騙す能力（0〜100） <input type="number" name="deceptionSkill" min="0" max="100"></label>
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>
