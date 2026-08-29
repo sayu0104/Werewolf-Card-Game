@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>セリフ一覧</title>
+</head>
+<body>
+    <h1>セリフ一覧</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>キャラID</th>
+                <th>行動種別</th>
+                <th>条件キー</th>
+                <th>セリフ本文</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="dialogue : ${dialogues}">
+                <td th:text="${dialogue.id}"></td>
+                <td th:text="${dialogue.characterId}"></td>
+                <td th:text="${dialogue.actionType}"></td>
+                <td th:text="${dialogue.conditionKey}"></td>
+                <td th:text="${dialogue.dialogueText}"></td>
+                <td>
+                    <form th:action="@{/admin/dialogues/{id}/delete(id=${dialogue.id})}" method="post">
+                        <button type="submit">削除</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>セリフを追加</h2>
+    <form th:action="@{/admin/dialogues}" method="post">
+        <label>キャラID <input type="number" name="characterId"></label>
+        <label>行動種別 <input type="text" name="actionType"></label>
+        <label>条件キー <input type="text" name="conditionKey"></label>
+        <label>セリフ本文 <input type="text" name="dialogueText"></label>
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>
