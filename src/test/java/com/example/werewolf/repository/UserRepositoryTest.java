@@ -34,6 +34,28 @@ class UserRepositoryTest {
 	}
 
 	@Test
+	void ユーザー名で検索すると該当するユーザーが取り出せる() {
+		// 準備：ユーザーを1件保存する
+		userRepository.save(new User("hunter_c", "hashed-password", "hunter_c@example.com"));
+
+		// 実行：ユーザー名で検索する
+		Optional<User> found = userRepository.findByUsername("hunter_c");
+
+		// 検証：保存した内容と一致する
+		assertThat(found).isPresent();
+		assertThat(found.get().getEmail()).isEqualTo("hunter_c@example.com");
+	}
+
+	@Test
+	void 存在しないユーザー名で検索すると空になる() {
+		// 実行：存在しないユーザー名で検索する
+		Optional<User> found = userRepository.findByUsername("no_such_user");
+
+		// 検証：見つからない
+		assertThat(found).isEmpty();
+	}
+
+	@Test
 	void ユーザーを2件保存すると件数が2件増える() {
 		// 準備：保存前の件数を覚えておく
 		long countBefore = userRepository.count();

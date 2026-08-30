@@ -1,14 +1,15 @@
 package com.example.werewolf.config;
 
+import com.example.werewolf.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration // 「これは設定ファイルですよ」の目印
@@ -17,30 +18,20 @@ public class SecurityConfig {
 	@Bean // 「この部品を、Springに登録して使わせる」目印
 	public PasswordEncoder passwordEncoder() { // 1. 暗号化担当（新）
 		// Password(パスワード)+Encoder(符号化するもの)=「パスワードを暗号化するもの」。これを返す
-		
+
 		return new BCryptPasswordEncoder();
 		// BCrypt方式の暗号化器を1個作って返す
 	}
 
 	@Bean // 「この部品を、Springに登録して使わせる」目印
-	public UserDetailsService userDetailsService() { // 2. ユーザー情報を提供する係（新）
-		UserDetails admin = User.withUsername("admin")
-			             // User.withUsername("admin")  … ユーザー名を "admin" にする
-				
-				.password("$2a$10$2kBLUxo.iAFiwpEGMjmnC.LbnFCPiqMhTtX5mlWnCvR.Py9GaoYVy")
-				.roles("ADMIN")
-				.build();
-		
-		     // .password("$2a$10$...")  … パスワードは このハッシュ（＝パスワードをハッシュ化した値）
-		     // .roles("ADMIN")          … 権限は "ADMIN"（管理者）
-		     // .build();                … 組み立てて完成！
-		
-		return new InMemoryUserDetailsManager(admin);
-		
-		// In Memory        … メモリ上（＝コードの中、DBじゃない）
-		// User Details      … ユーザーの詳細情報
-		// Manager           … 管理者
-		// ＝「コードの中で、ユーザー情報を管理する係」
+	public UserDetailsService userDetailsService(UserRepository userRepository) { // 2. ユーザー情報を提供する係（新）
+		return username -> userRepository.findByUsername(username)
+				.filter(com.example.werewolf.entity.User::getIsAdmin)
+				.map(user -> (UserDetails) User.withUsername(user.getUsername())
+						.password(user.getPasswordHash())
+						.roles("ADMIN")
+						.build())
+				.orElseThrow(() -> new UsernameNotFoundException(username));
 	}
 
 	@Bean // 「この部品を、Springに登録して使わせる」目印
