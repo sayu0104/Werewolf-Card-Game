@@ -14,22 +14,37 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration // 「これは設定ファイルですよ」の目印
 public class SecurityConfig {
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
+	@Bean // 「この部品を、Springに登録して使わせる」目印
+	public PasswordEncoder passwordEncoder() { // 1. 暗号化担当（新）
+		// Password(パスワード)+Encoder(符号化するもの)=「パスワードを暗号化するもの」。これを返す
+		
 		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public UserDetailsService userDetailsService() {
-		UserDetails admin = User.withUsername("admin")
-				.password("$2a$10$2kBLUxo.iAFiwpEGMjmnC.LbnFCPiqMhTtX5mlWnCvR.Py9GaoYVy")
-				.roles("ADMIN")
-				.build();
-		return new InMemoryUserDetailsManager(admin);
+		// BCrypt方式の暗号化器を1個作って返す
 	}
 
 	@Bean // 「この部品を、Springに登録して使わせる」目印
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public UserDetailsService userDetailsService() { // 2. ユーザー情報を提供する係（新）
+		UserDetails admin = User.withUsername("admin")
+			             // User.withUsername("admin")  … ユーザー名を "admin" にする
+				
+				.password("$2a$10$2kBLUxo.iAFiwpEGMjmnC.LbnFCPiqMhTtX5mlWnCvR.Py9GaoYVy")
+				.roles("ADMIN")
+				.build();
+		
+		     // .password("$2a$10$...")  … パスワードは このハッシュ（＝パスワードをハッシュ化した値）
+		     // .roles("ADMIN")          … 権限は "ADMIN"（管理者）
+		     // .build();                … 組み立てて完成！
+		
+		return new InMemoryUserDetailsManager(admin);
+		
+		// In Memory        … メモリ上（＝コードの中、DBじゃない）
+		// User Details      … ユーザーの詳細情報
+		// Manager           … 管理者
+		// ＝「コードの中で、ユーザー情報を管理する係」
+	}
+
+	@Bean // 「この部品を、Springに登録して使わせる」目印
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { //  3.門番の指示書（昨日のやつ）
 		http
 		
 		// public               … 公開
