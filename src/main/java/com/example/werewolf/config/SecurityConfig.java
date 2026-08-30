@@ -26,12 +26,27 @@ public class SecurityConfig {
 	@Bean // 「この部品を、Springに登録して使わせる」目印
 	public UserDetailsService userDetailsService(UserRepository userRepository) { // 2. ユーザー情報を提供する係（新）
 		return username -> userRepository.findByUsername(username)
+				// 入力されたユーザー名で、usersテーブルを探す
+				
 				.filter(com.example.werewolf.entity.User::getIsAdmin)
+				// 見つかった人のうち、is_admin が true の人だけに絞る（＝管理者だけ通す）
+				
+				// .filter(User::getIsAdmin) … filter=「ふるいにかける・絞る」。
+				// getIsAdmin(is_adminを取得)がtrueの人だけ通す。これが「管理者だけ」の正体
+				
 				.map(user -> (UserDetails) User.withUsername(user.getUsername())
+						// .map(...) … 「見つかった人を、ログイン用の形に変換する」。map=変換
+						
 						.password(user.getPasswordHash())
 						.roles("ADMIN")
 						.build())
+				// その人の情報（名前・DBのパスワードハッシュ・権限）で、ログイン用ユーザーを組み立てる
+				
 				.orElseThrow(() -> new UsernameNotFoundException(username));
+		        // もし見つからなければ（or 管理者じゃなければ）、「そんなユーザーいない」エラー
+		
+		        // orElse(さもなければ)+Throw(投げる)
+		        // user.getPasswordHash() … DBに保存されてる、その人のハッシュ化パスワード。
 	}
 
 	@Bean // 「この部品を、Springに登録して使わせる」目印

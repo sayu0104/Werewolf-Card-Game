@@ -11,4 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;//データ出し�
 
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsername(String username);
+	
+	//  「見つかるかも」    ユーザー名で探す（受け取ったusernameで）
+	// の箱で<User>を返す
 }
