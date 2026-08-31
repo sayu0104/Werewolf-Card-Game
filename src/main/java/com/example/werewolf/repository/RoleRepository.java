@@ -1,6 +1,7 @@
 package com.example.werewolf.repository;
 
 import com.example.werewolf.entity.Role;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 //RoleRepository ＝ roles のデータを出し入れする倉庫番
@@ -9,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 //これだけで「全件取得・削除・保存」などの基本操作が自動で使えるようになる
 
 public interface RoleRepository extends JpaRepository<Role, Long> {
+	Optional<Role> findByName(String name);
 }
