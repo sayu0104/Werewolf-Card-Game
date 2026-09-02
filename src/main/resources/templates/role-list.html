@@ -5,6 +5,10 @@
     <title>役職一覧</title>
 </head>
 <body>
+    <form th:action="@{/logout}" method="post">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">ログアウト</button>
+    </form>
     <h1>役職一覧</h1>
     <table border="1">
         <thead>
