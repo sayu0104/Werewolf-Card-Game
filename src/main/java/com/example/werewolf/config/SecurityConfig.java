@@ -63,7 +63,9 @@ public class SecurityConfig {
 
 				// １．どのURLを守る/開放する
 				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/admin/**").authenticated().anyRequest().permitAll())
+						auth -> auth.requestMatchers("/admin/**").authenticated()
+								.requestMatchers("/register").permitAll()
+								.anyRequest().permitAll())
 
 				// authorizeHttpRequests … 「リクエスト（アクセス）を、許可制にする」
 				
