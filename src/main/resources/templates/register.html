@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新規登録</title>
+</head>
+<body>
+    <h1>新規登録</h1>
+    <form th:action="@{/register}" method="post">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <label>ユーザー名 <input type="text" name="username" required></label>
+        <label>メールアドレス <input type="email" name="email" required></label>
+        <label>パスワード <input type="password" name="password" required></label>
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>
