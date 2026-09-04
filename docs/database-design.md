@@ -98,7 +98,7 @@
 | is_alive | BOOLEAN | NOT NULL DEFAULT TRUE | |
 | seat_order | INT | NOT NULL | 席順・表示順 |
 
-> `user_id` と `character_id` はどちらか一方のみ値を持つ（CHECK制約またはアプリ側バリデーションで担保）。
+> `user_id` と `character_id` は、キャラ選出の完了後はどちらか一方のみ値を持つ（人間=user_id / 疑似プレイヤー=character_id）。ただしゲーム開始処理の時点では両方NULLで作成する（席と役職のみ先に確定し、誰が座るかはキャラ選出で後から埋めるため）。「どちらか一方のみ」は選出完了後の完成形のルールとして、アプリ側で担保する。
 
 ### 3.7 cards（カードマスタ）
 | カラム名 | 型 | 制約 | 説明 |
