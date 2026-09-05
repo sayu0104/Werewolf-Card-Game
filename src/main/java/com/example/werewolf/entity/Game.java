@@ -2,6 +2,8 @@ package com.example.werewolf.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,8 +25,9 @@ public class Game {
 	@Column(nullable = false, length = 20) // 以下の変数に対して（）
 	private String status;// ステータス
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "current_phase", length = 20)
-	private String currentPhase;// 現在のフェーズ（段階）
+	private Phase currentPhase;// 現在のフェーズ（段階）
 
 	@Column(name = "day_number", nullable = false)
 	private Integer dayNumber = 1;// ゲーム内日付（ゲームは1日目から始まる）
@@ -64,11 +67,11 @@ public class Game {
 		this.status = status;// 台帳と、記入する（紙）
 	}
 
-	public String getCurrentPhase() {
+	public Phase getCurrentPhase() {
 		return currentPhase;// 現在のフェーズ
 	}
 
-	public void setCurrentPhase(String currentPhase) {
+	public void setCurrentPhase(Phase currentPhase) {
 		this.currentPhase = currentPhase;
 	}
 
