@@ -25,7 +25,8 @@ public class Game {
 	@Column(nullable = false, length = 20) // 以下の変数に対して（）
 	private String status;// ステータス
 
-	@Enumerated(EnumType.STRING)
+	@Enumerated(EnumType.STRING) // 「Javaのenumを、DBにどう保存するか」の橋渡しの印
+								 // EnumType.STRING … enumの名前を文字列で保存
 	@Column(name = "current_phase", length = 20)
 	private Phase currentPhase;// 現在のフェーズ（段階）
 

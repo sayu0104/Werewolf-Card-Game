@@ -37,9 +37,10 @@ public class GameStartService { // ゲームの試合開始処理クラス
 		// 2.作った後 → dayNumber欄に 1 を書き込む（setter）
 
 		game.setCurrentPhase(Phase.DAY);
+		// 3.このgameの現在フェーズ欄に、昼（Phase.DAY）を書き込む
 
 		game.setIsSinglePlayer(true); // 1人プレイか？ (はい)
-		// 3.作った後 → isSinglePlayer欄に true を書き込む（setter）
+		// 4.作った後 → isSinglePlayer欄に true を書き込む（setter）
 		
 		game = gameRepository.save(game);
 		// Gameをnewで作った直後はidが空
