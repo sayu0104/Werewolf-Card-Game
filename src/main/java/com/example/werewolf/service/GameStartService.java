@@ -2,6 +2,7 @@ package com.example.werewolf.service;
 
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
+import com.example.werewolf.entity.Phase;
 import com.example.werewolf.repository.GameRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,12 @@ public class GameStartService { // ゲームの試合開始処理クラス
 		
 		game.setDayNumber(1); // 1日目
 		// 2.作った後 → dayNumber欄に 1 を書き込む（setter）
-		
+
+		game.setCurrentPhase(Phase.DAY);
+		// 3.このgameの現在フェーズ欄に、昼（Phase.DAY）を書き込む
+
 		game.setIsSinglePlayer(true); // 1人プレイか？ (はい)
-		// 3.作った後 → isSinglePlayer欄に true を書き込む（setter）
+		// 4.作った後 → isSinglePlayer欄に true を書き込む（setter）
 		
 		game = gameRepository.save(game);
 		// Gameをnewで作った直後はidが空
