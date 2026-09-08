@@ -1,6 +1,7 @@
 package com.example.werewolf.repository;
 
 import com.example.werewolf.entity.GamePlayer;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 //GamePlayerRepository ＝ game_players のデータを出し入れする倉庫番
@@ -9,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 //これだけで「全件取得・削除・保存」などの基本操作が自動で使えるようになる
 
 public interface GamePlayerRepository extends JpaRepository<GamePlayer, Long> {
+	List<GamePlayer> findByGameId(Long gameId);
 }
