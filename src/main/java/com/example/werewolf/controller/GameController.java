@@ -33,6 +33,12 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		 // 4つの係（Service・倉庫）を受け取って、この GameController に入れる
 	}
 
+	@GetMapping("/game")
+	public String showStart() {
+		return "game";
+		// game に GET(見せて)が来たら、game.html を返す
+	}
+
 	@PostMapping("/game/start")
 	// このURLに POST（実行して）という指示が来たら、以下の処理をする
 	
