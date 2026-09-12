@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ゲーム画面（デバッグ用）</title>
+</head>
+<body>
+    <h1>ゲーム画面（デバッグ用）</h1>
+
+    <form th:action="@{/game/start}" method="post">
+        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit">ゲームスタート</button>
+    </form>
+
+    <p>試合ID：<span th:text="${gameId}"></span></p>
+    <p>現在のフェーズ：<span th:text="${currentPhase}"></span></p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>席順</th>
+                <th>役職</th>
+                <th>生存</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="player : ${players}">
+                <td th:text="${player.seatOrder}"></td>
+                <td th:text="${player.roleName}"></td>
+                <td th:text="${player.isAlive}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
