@@ -16,6 +16,11 @@
         <p>試合ID：<span th:text="${gameId}"></span></p>
         <p>現在のフェーズ：<span th:text="${currentPhase}"></span></p>
 
+        <form th:action="@{/game/{id}/next(id=${gameId})}" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit">次のフェーズへ</button>
+        </form>
+
         <table border="1">
             <thead>
                 <tr>

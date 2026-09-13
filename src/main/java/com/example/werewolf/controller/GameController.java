@@ -7,6 +7,7 @@ import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.GameRepository;
 import com.example.werewolf.repository.RoleRepository;
 import com.example.werewolf.service.GameStartService;
+import com.example.werewolf.service.PhaseService;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -19,14 +20,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class GameController { // ブラウザから指示が来たら、必要なものを画面に受け渡しする係
 
 	private final GameStartService gameStartService;
+	private final PhaseService phaseService;
 	private final GameRepository gameRepository;
 	private final GamePlayerRepository gamePlayerRepository;
 	private final RoleRepository roleRepository;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
-	public GameController(GameStartService gameStartService, GameRepository gameRepository,
+	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository) {
 		this.gameStartService = gameStartService;
+		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
 		this.gamePlayerRepository = gamePlayerRepository;
 		this.roleRepository = roleRepository;
@@ -85,5 +88,23 @@ public class GameController { // ブラウザから指示が来たら、必要�
 
 		return "game";
 		// 以上の処理が終わったら、この画面(game.html)を見せる
+	}
+
+	@PostMapping("/game/{id}/next")
+	// このURLに、postで指示が来たら、以下の処理をする
+	
+	public String nextPhase(@PathVariable Long id) {
+		// 今の試合を次のフェーズに進める係。URLからIDの番号を取得する
+		
+		Game game = gameRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
+		// IDを使って、ゲームの倉庫からこの1試合を取ってくる。それを、gameの箱に入れる
+		// もし見つからなかったら、「試合が見つからない＋（ID番号）」というエラーを出す
+		
+		phaseService.advancePhase(game);
+		// フェーズを進める係に、この game を渡して、次のフェーズに進めてもらう
+		
+		return "redirect:/game/" + id;
+		// 上の処理が終わったら、フェーズを進めた後のその試合の"表示画面"に戻す（今のURL＋ID番号をつけて）
 	}
 }
