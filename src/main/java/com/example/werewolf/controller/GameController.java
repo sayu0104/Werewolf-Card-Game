@@ -3,11 +3,18 @@ package com.example.werewolf.controller;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.Role;
+import com.example.werewolf.entity.Vote;
 import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.GameRepository;
 import com.example.werewolf.repository.RoleRepository;
+import com.example.werewolf.service.ExecutionResult;
+import com.example.werewolf.service.ExecutionService;
+import com.example.werewolf.service.GameResult;
+import com.example.werewolf.service.GameResultService;
 import com.example.werewolf.service.GameStartService;
 import com.example.werewolf.service.PhaseService;
+import com.example.werewolf.service.VoteCountService;
+import com.example.werewolf.service.VotingService;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -15,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller //ブラウザからの注文を受け付ける係、という目印
 public class GameController { // ブラウザから指示が来たら、必要なものを画面に受け渡しする係
@@ -24,16 +32,25 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	private final GameRepository gameRepository;
 	private final GamePlayerRepository gamePlayerRepository;
 	private final RoleRepository roleRepository;
+	private final VotingService votingService;
+	private final VoteCountService voteCountService;
+	private final ExecutionService executionService;
+	private final GameResultService gameResultService;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
 	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
-			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository) {
+			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository, VotingService votingService,
+			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService) {
 		this.gameStartService = gameStartService;
 		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
 		this.gamePlayerRepository = gamePlayerRepository;
 		this.roleRepository = roleRepository;
-		 // 4つの係（Service・倉庫）を受け取って、この GameController に入れる
+		this.votingService = votingService;
+		this.voteCountService = voteCountService;
+		this.executionService = executionService;
+		this.gameResultService = gameResultService;
+		 // 8つの係（Service・倉庫）を受け取って、この GameController に入れる
 	}
 
 	@GetMapping("/game")
@@ -106,5 +123,35 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		
 		return "redirect:/game/" + id;
 		// 上の処理が終わったら、フェーズを進めた後のその試合の"表示画面"に戻す（今のURL＋ID番号をつけて）
+	}
+
+	@PostMapping("/game/{id}/vote")
+	// このURLに、postで指示が来たら、以下の処理をする
+
+	public String voteGame(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+		// 投票→集計→処刑→勝敗判定をまとめて行う係。URLからIDの番号を取得する
+
+		Game game = gameRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
+		// IDを使って、ゲームの倉庫からこの1試合を取ってくる。それを、gameの箱に入れる
+
+		List<Vote> votes = votingService.vote(game);
+		// 生存者全員に、ランダムで1票ずつ投票させる
+
+		List<Long> mostVotedGamePlayerIds = voteCountService.findMostVoted(votes);
+		// 今回の投票を集計して、最多得票者のIdリストを取り出す
+
+		ExecutionResult executionResult = executionService.execute(mostVotedGamePlayerIds);
+		// 最多得票者が1人なら処刑する（生存フラグをfalseにする）
+
+		GameResult gameResult = gameResultService.judge(id);
+		// 処刑後の生存者数から、勝敗を判定する
+
+		redirectAttributes.addFlashAttribute("executionResult", executionResult);
+		redirectAttributes.addFlashAttribute("gameResult", gameResult);
+		// 画面表示用に、処刑結果と勝敗結果を次のリクエストへ渡す
+
+		return "redirect:/game/" + id;
+		// 上の処理が終わったら、その試合の"表示画面"に戻す
 	}
 }
