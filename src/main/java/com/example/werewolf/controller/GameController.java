@@ -136,20 +136,21 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		// IDを使って、ゲームの倉庫からこの1試合を取ってくる。それを、gameの箱に入れる
 
 		List<Vote> votes = votingService.vote(game);
-		// 生存者全員に、ランダムで1票ずつ投票させる
+		// そのゲームに投票メソッドを使って、votes の箱に入れる（生存者だけ、ランダムに1票）
 
 		List<Long> mostVotedGamePlayerIds = voteCountService.findMostVoted(votes);
-		// 今回の投票を集計して、最多得票者のIdリストを取り出す
+		// その箱から、最大票の人だけを全員集めて、別のリストの箱に入れる
 
 		ExecutionResult executionResult = executionService.execute(mostVotedGamePlayerIds);
-		// 最多得票者が1人なら処刑する（生存フラグをfalseにする）
+		// その箱の最大票の人を、処刑ロジックで実行（1人なら死亡、0か複数なら再投票）
+		// （※今は全員必ず投票するので0人は実質起きないが、将来の棄権等に備えて0人も弾いてある）
 
 		GameResult gameResult = gameResultService.judge(id);
 		// 処刑後の生存者数から、勝敗を判定する
 
 		redirectAttributes.addFlashAttribute("executionResult", executionResult);
 		redirectAttributes.addFlashAttribute("gameResult", gameResult);
-		// 画面表示用に、処刑結果と勝敗結果を次のリクエストへ渡す
+		// 処刑結果と勝敗結果を、画面に1回だけ映す（ずっと表示されると困るので、1回で消える）
 
 		return "redirect:/game/" + id;
 		// 上の処理が終わったら、その試合の"表示画面"に戻す
