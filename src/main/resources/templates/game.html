@@ -21,6 +21,15 @@
             <button type="submit">次のフェーズへ</button>
         </form>
 
+        <form th:action="@{/game/{id}/vote(id=${gameId})}" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit">投票する</button>
+        </form>
+
+        <p th:if="${gameResult != null}">
+            勝敗：<span th:text="${gameResult}"></span>
+        </p>
+
         <table border="1">
             <thead>
                 <tr>
