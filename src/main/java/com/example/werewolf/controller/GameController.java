@@ -98,9 +98,17 @@ public class GameController { // ブラウザから指示が来たら、必要�
 			// 画面表示用の箱(playerViews)に、一人ずつ足していく。中身は、その人の席順・役職名・生存状態
 		}
 
+		GameResult gameResult = gameResultService.judge(id);
+		// 今の試合が決着したか"確認するため"に、judgeで勝敗を調べる（試合は動かさない・ただ見るだけ）
+		
+		boolean isFinished = gameResult != GameResult.CONTINUE;
+		// その結果が CONTINUE（続行）じゃなければ、決着した（isFinished = true）
+
 		model.addAttribute("gameId", game.getId()); // 1.ゲームID
 		model.addAttribute("currentPhase", game.getCurrentPhase()); // 2.今のフェーズ
 		model.addAttribute("players", playerViews); // 3.表示用のプレイヤー一覧
+		model.addAttribute("gameResult", gameResult);
+		model.addAttribute("isFinished", isFinished);
 		// 画面表示用のお盆(model)に、項目(名札)付きで3つ追加する
 
 		return "game";
