@@ -16,17 +16,21 @@
         <p>試合ID：<span th:text="${gameId}"></span></p>
         <p>現在のフェーズ：<span th:text="${currentPhase}"></span></p>
 
-        <form th:action="@{/game/{id}/next(id=${gameId})}" method="post">
+        <form th:if="${!isFinished}" th:action="@{/game/{id}/next(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">次のフェーズへ</button>
         </form>
 
-        <form th:action="@{/game/{id}/vote(id=${gameId})}" method="post">
+        <form th:if="${currentPhase.name() == 'VOTE' and !isFinished}" th:action="@{/game/{id}/vote(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">投票する</button>
         </form>
 
-        <p th:if="${gameResult != null}">
+        <p>
+            <a th:href="@{/game}">終了する</a>
+        </p>
+
+        <p th:if="${isFinished}">
             勝敗：<span th:text="${gameResult}"></span>
         </p>
 
