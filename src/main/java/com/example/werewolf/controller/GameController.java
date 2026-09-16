@@ -10,12 +10,15 @@ import com.example.werewolf.repository.RoleRepository;
 import com.example.werewolf.repository.VoteRepository;
 import com.example.werewolf.service.ExecutionResult;
 import com.example.werewolf.service.ExecutionService;
+import com.example.werewolf.service.FortuneTellerService;
 import com.example.werewolf.service.GameResult;
 import com.example.werewolf.service.GameResultService;
 import com.example.werewolf.service.GameStartService;
+import com.example.werewolf.service.HunterService;
 import com.example.werewolf.service.PhaseService;
 import com.example.werewolf.service.VoteCountService;
 import com.example.werewolf.service.VotingService;
+import com.example.werewolf.service.WerewolfService;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Controller;
@@ -38,12 +41,16 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	private final ExecutionService executionService;
 	private final GameResultService gameResultService;
 	private final VoteRepository voteRepository;
+	private final FortuneTellerService fortuneTellerService;
+	private final WerewolfService werewolfService;
+	private final HunterService hunterService;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
 	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository, VotingService votingService,
 			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService,
-			VoteRepository voteRepository) {
+			VoteRepository voteRepository, FortuneTellerService fortuneTellerService, WerewolfService werewolfService,
+			HunterService hunterService) {
 		this.gameStartService = gameStartService;
 		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
@@ -54,6 +61,9 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		this.executionService = executionService;
 		this.gameResultService = gameResultService;
 		this.voteRepository = voteRepository;
+		this.fortuneTellerService = fortuneTellerService;
+		this.werewolfService = werewolfService;
+		this.hunterService = hunterService;
 		 // 8つの係（Service・倉庫）を受け取って、この GameController に入れる
 	}
 
@@ -182,5 +192,18 @@ public class GameController { // ブラウザから指示が来たら、必要�
 
 		return "redirect:/game/" + id;
 		// 上の処理が終わったら、その試合の"表示画面"に戻す
+	}
+
+	// それぞれの夜に行動する役職に、能力を使ってもらう(役職カードを使わなかった場合の設計はこれから)
+	@PostMapping("/game/{id}/night1")
+	public String night1(@PathVariable Long id) {
+		Game game = gameRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
+
+		fortuneTellerService.act(game);
+		werewolfService.act(game);
+		hunterService.act(game);
+
+		return "redirect:/game/" + id;
 	}
 }
