@@ -7,6 +7,7 @@ import com.example.werewolf.entity.Vote;
 import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.GameRepository;
 import com.example.werewolf.repository.RoleRepository;
+import com.example.werewolf.repository.VoteRepository;
 import com.example.werewolf.service.ExecutionResult;
 import com.example.werewolf.service.ExecutionService;
 import com.example.werewolf.service.GameResult;
@@ -36,11 +37,13 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	private final VoteCountService voteCountService;
 	private final ExecutionService executionService;
 	private final GameResultService gameResultService;
+	private final VoteRepository voteRepository;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
 	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository, VotingService votingService,
-			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService) {
+			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService,
+			VoteRepository voteRepository) {
 		this.gameStartService = gameStartService;
 		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
@@ -50,6 +53,7 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		this.voteCountService = voteCountService;
 		this.executionService = executionService;
 		this.gameResultService = gameResultService;
+		this.voteRepository = voteRepository;
 		 // 8つの係（Service・倉庫）を受け取って、この GameController に入れる
 	}
 
@@ -104,12 +108,19 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		boolean isFinished = gameResult != GameResult.CONTINUE;
 		// その結果が CONTINUE（続行）じゃなければ、決着した（isFinished = true）
 
+		boolean hasVoted = voteRepository.countByGameIdAndDayNumber(id, game.getDayNumber()) > 0;
+		// この試合の、今の日付の投票が1件以上あれば、投票済み（hasVoted = true）
+		// 投票の倉庫から、ゲームIDと何日目かを使って、件数を数える
+		// 0より多いなら、hasVoted に true を入れる
+		// 1件でもあれば（＝誰か投票してれば）、その日はもう投票済み
+
 		model.addAttribute("gameId", game.getId()); // 1.ゲームID
 		model.addAttribute("currentPhase", game.getCurrentPhase()); // 2.今のフェーズ
 		model.addAttribute("players", playerViews); // 3.表示用のプレイヤー一覧
 		model.addAttribute("gameResult", gameResult);
 		model.addAttribute("isFinished", isFinished);
-		// 画面表示用のお盆(model)に、項目(名札)付きで3つ追加する
+		model.addAttribute("hasVoted", hasVoted);
+		// 画面表示用のお盆(model)に、項目(名札)付きで6つ追加する
 
 		return "game";
 		// 以上の処理が終わったら、この画面(game.html)を見せる
@@ -142,6 +153,15 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		Game game = gameRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
 		// IDを使って、ゲームの倉庫からこの1試合を取ってくる。それを、gameの箱に入れる
+
+		if (voteRepository.countByGameIdAndDayNumber(id, game.getDayNumber()) > 0) {
+			// 今の日付の投票が既にあれば、二重投票なので何もせず戻す
+			// その日に投票が行われているか確認して、もし行われているなら…
+			
+			return "redirect:/game/" + id;
+			// 表示画面に戻す（ゲームIDをつけて）
+			// これ以上投票する必要ないので、ここから下の投票をさせない
+		}
 
 		List<Vote> votes = votingService.vote(game);
 		// そのゲームに投票メソッドを使って、votes の箱に入れる（生存者だけ、ランダムに1票）
