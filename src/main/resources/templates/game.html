@@ -26,6 +26,11 @@
             <button type="submit">投票する</button>
         </form>
 
+        <form th:if="${currentPhase.name() == 'NIGHT1' and !isFinished}" th:action="@{/game/{id}/night1(id=${gameId})}" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit">夜の行動</button>
+        </form>
+
         <p>
             <a th:href="@{/game}">終了する</a>
         </p>
