@@ -64,7 +64,7 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		this.fortuneTellerService = fortuneTellerService;
 		this.werewolfService = werewolfService;
 		this.hunterService = hunterService;
-		 // 8つの係（Service・倉庫）を受け取って、この GameController に入れる
+		 // 必要な係（Service・倉庫）をまとめて受け取って、この GameController に入れる
 	}
 
 	@GetMapping("/game")
