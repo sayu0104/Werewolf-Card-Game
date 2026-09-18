@@ -15,6 +15,7 @@ import com.example.werewolf.service.GameResult;
 import com.example.werewolf.service.GameResultService;
 import com.example.werewolf.service.GameStartService;
 import com.example.werewolf.service.HunterService;
+import com.example.werewolf.service.NightResultService;
 import com.example.werewolf.service.PhaseService;
 import com.example.werewolf.service.VoteCountService;
 import com.example.werewolf.service.VotingService;
@@ -44,13 +45,14 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	private final FortuneTellerService fortuneTellerService;
 	private final WerewolfService werewolfService;
 	private final HunterService hunterService;
+	private final NightResultService nightResultService;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
 	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository, VotingService votingService,
 			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService,
 			VoteRepository voteRepository, FortuneTellerService fortuneTellerService, WerewolfService werewolfService,
-			HunterService hunterService) {
+			HunterService hunterService, NightResultService nightResultService) {
 		this.gameStartService = gameStartService;
 		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
@@ -64,6 +66,7 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		this.fortuneTellerService = fortuneTellerService;
 		this.werewolfService = werewolfService;
 		this.hunterService = hunterService;
+		this.nightResultService = nightResultService;
 		 // 必要な係（Service・倉庫）をまとめて受け取って、この GameController に入れる
 	}
 
@@ -203,6 +206,17 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		fortuneTellerService.act(game);
 		werewolfService.act(game);
 		hunterService.act(game);
+
+		return "redirect:/game/" + id;
+	}
+
+	// 夜2の結果処理をする（＝夜1で記録された襲撃と護衛を突き合わせて、決着させる）
+	@PostMapping("/game/{id}/night2")
+	public String night2(@PathVariable Long id) {
+		Game game = gameRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
+
+		nightResultService.resolve(game);
 
 		return "redirect:/game/" + id;
 	}
