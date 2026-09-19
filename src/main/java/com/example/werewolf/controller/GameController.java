@@ -129,6 +129,7 @@ public class GameController { // ブラウザから指示が来たら、必要�
 
 		model.addAttribute("gameId", game.getId()); // 1.ゲームID
 		model.addAttribute("currentPhase", game.getCurrentPhase()); // 2.今のフェーズ
+		model.addAttribute("dayNumber", game.getDayNumber());
 		model.addAttribute("players", playerViews); // 3.表示用のプレイヤー一覧
 		model.addAttribute("gameResult", gameResult);
 		model.addAttribute("isFinished", isFinished);

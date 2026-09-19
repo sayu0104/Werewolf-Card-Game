@@ -14,6 +14,7 @@
 
     <div th:if="${gameId != null}">
         <p>試合ID：<span th:text="${gameId}"></span></p>
+        <p><span th:text="${dayNumber}"></span>日目</p>
         <p>現在のフェーズ：<span th:text="${currentPhase}"></span></p>
 
         <form th:if="${!isFinished and (currentPhase.name() != 'VOTE' or hasVoted)}" th:action="@{/game/{id}/next(id=${gameId})}" method="post">
