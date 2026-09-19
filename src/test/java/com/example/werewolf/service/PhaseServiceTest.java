@@ -145,6 +145,23 @@ class PhaseServiceTest { // フェーズの動き方のテスト
 	}
 
 	@Test
+	void 朝の次の昼に進んでもdayNumberは変わらない() {
+		Game game = new Game("in_progress");
+		game.setDayNumber(2);
+		game.setCurrentPhase(Phase.MORNING);
+		// 準備：手順書通りにゲームを用意する（日付は2日目、フェーズは朝）
+
+		Game result = phaseService.advancePhase(game);
+		// 実行：フェーズを1つ進める
+
+		assertThat(result.getCurrentPhase()).isEqualTo(Phase.DAY);
+		assertThat(result.getDayNumber()).isEqualTo(2);
+		// 結果：
+		// １．進めた後、今のフェーズは昼のはず
+		// ２．ゲーム内日付は2日目である
+	}
+
+	@Test
 	void 試合開始直後のcurrentPhaseが昼になっている() {
 		Game game = gameStartService.startGame();
 		// 準備：ゲーム開始時を用意する
