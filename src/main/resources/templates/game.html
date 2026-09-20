@@ -15,7 +15,7 @@
     <div th:if="${gameId != null}">
         <p>試合ID：<span th:text="${gameId}"></span></p>
         <p><span th:text="${dayNumber}"></span>日目</p>
-        <p>現在のフェーズ：<span th:text="${currentPhase}"></span></p>
+        <p>現在のフェーズ：<span th:switch="${currentPhase.name()}"><span th:case="'MORNING'">朝・結果</span><span th:case="'DAY'">昼・相談</span><span th:case="'VOTE'">夕方・投票</span><span th:case="'NIGHT1'">夜・対象選択</span><span th:case="'NIGHT2'">夜・行動処理</span></span></p>
 
         <form th:if="${!isFinished and (currentPhase.name() != 'VOTE' or hasVoted)}" th:action="@{/game/{id}/next(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -42,7 +42,7 @@
         </p>
 
         <p th:if="${isFinished}">
-            勝敗：<span th:text="${gameResult}"></span>
+            勝敗：<span th:text="${gameResult.name() == 'VILLAGER_WIN' ? '村人陣営の勝利' : '人狼陣営の勝利'}"></span>
         </p>
 
         <table border="1">
@@ -57,7 +57,7 @@
                 <tr th:each="player : ${players}">
                     <td th:text="${player.seatOrder}"></td>
                     <td th:text="${player.roleName}"></td>
-                    <td th:text="${player.isAlive}"></td>
+                    <td th:text="${player.isAlive} ? '生存' : '死亡'"></td>
                 </tr>
             </tbody>
         </table>
