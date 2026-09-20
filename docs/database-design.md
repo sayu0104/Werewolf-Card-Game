@@ -146,6 +146,7 @@
 | action_type | VARCHAR(20) | NOT NULL | attack / guard / divine |
 | target_game_player_id | INT | FK -> game_players.id, NOT NULL | |
 | is_successful | BOOLEAN | NULL | 護衛によって襲撃が防がれたかなど、朝の結果判定後に確定 |
+| is_werewolf | BOOLEAN | NULL | 占い結果（true=黒(人狼) / false=白）。占いの行のみ使用し、襲撃・護衛の行はNULL。役職名が「人狼」かで判定する（狂人は白） |
 
 > 護衛は襲撃より優先処理する要件（3.1参照）をアプリ側のロジックで担保する。
 

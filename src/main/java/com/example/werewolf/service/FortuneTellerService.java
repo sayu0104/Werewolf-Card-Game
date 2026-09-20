@@ -17,6 +17,7 @@ public class FortuneTellerService { // 占い師の役職について
 
 	private static final String ROLE_NAME = "占い師";
 	private static final String ACTION_TYPE = "占い";
+	private static final String WEREWOLF_ROLE_NAME = "人狼";
 
 	private final GamePlayerRepository gamePlayerRepository;
 	private final RoleRepository roleRepository;
@@ -52,6 +53,11 @@ public class FortuneTellerService { // 占い師の役職について
 			GamePlayer target = chooseTarget(alivePlayers, actor);
 			NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
 					target.getId());
+			Role targetRole = roleRepository.findById(target.getRoleId())
+					.orElseThrow(() -> new IllegalArgumentException("役職が見つからない: " + target.getRoleId()));
+			nightAction.setIsWerewolf(WEREWOLF_ROLE_NAME.equals(targetRole.getName()));
+			// 占った人の役職名が「人狼」なら、trueという結果を出す
+			
 			nightActions.add(nightActionRepository.save(nightAction));
 		}
 
