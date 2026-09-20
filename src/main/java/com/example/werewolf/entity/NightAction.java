@@ -36,6 +36,9 @@ public class NightAction {// 夜の行動
 	@Column(name = "is_successful")
 	private Boolean isSuccessful;// 成功したか？判定
 
+	@Column(name = "is_werewolf")
+	private Boolean isWerewolf;// 占った相手は人狼か？
+
 	// JPAが利用するための引数なしコンストラクタ
 	public NightAction() {
 	}
@@ -102,5 +105,13 @@ public class NightAction {// 夜の行動
 
 	public void setIsSuccessful(Boolean isSuccessful) {
 		this.isSuccessful = isSuccessful;
+	}
+
+	public Boolean getIsWerewolf() {
+		return isWerewolf;
+	}
+
+	public void setIsWerewolf(Boolean isWerewolf) {
+		this.isWerewolf = isWerewolf;
 	}
 }
