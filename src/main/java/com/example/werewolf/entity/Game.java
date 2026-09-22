@@ -33,6 +33,9 @@ public class Game {
 	@Column(name = "day_number", nullable = false)
 	private Integer dayNumber = 1;// ゲーム内日付（ゲームは1日目から始まる）
 
+	@Column(name = "night_resolved_day")
+	private Integer nightResolvedDay;// その夜2の処理を終えた日付は何日目か？　初期値はnull
+
 	@Column(name = "winner_faction", length = 20)
 	private String winnerFaction;// 勝利陣営（派閥）
 
@@ -82,6 +85,14 @@ public class Game {
 
 	public void setDayNumber(Integer dayNumber) {
 		this.dayNumber = dayNumber;
+	}
+
+	public Integer getNightResolvedDay() {
+		return nightResolvedDay;
+	}
+
+	public void setNightResolvedDay(Integer nightResolvedDay) {
+		this.nightResolvedDay = nightResolvedDay;
 	}
 
 	public String getWinnerFaction() {

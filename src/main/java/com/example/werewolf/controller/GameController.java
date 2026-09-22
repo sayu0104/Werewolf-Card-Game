@@ -6,6 +6,7 @@ import com.example.werewolf.entity.Role;
 import com.example.werewolf.entity.Vote;
 import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.GameRepository;
+import com.example.werewolf.repository.NightActionRepository;
 import com.example.werewolf.repository.RoleRepository;
 import com.example.werewolf.repository.VoteRepository;
 import com.example.werewolf.service.ExecutionResult;
@@ -46,13 +47,15 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	private final WerewolfService werewolfService;
 	private final HunterService hunterService;
 	private final NightResultService nightResultService;
+	private final NightActionRepository nightActionRepository;
 	// （画面などに）受け渡しするために、必要なデータの倉庫やシステムを用意しておく
 
 	public GameController(GameStartService gameStartService, PhaseService phaseService, GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository, VotingService votingService,
 			VoteCountService voteCountService, ExecutionService executionService, GameResultService gameResultService,
 			VoteRepository voteRepository, FortuneTellerService fortuneTellerService, WerewolfService werewolfService,
-			HunterService hunterService, NightResultService nightResultService) {
+			HunterService hunterService, NightResultService nightResultService,
+			NightActionRepository nightActionRepository) {
 		this.gameStartService = gameStartService;
 		this.phaseService = phaseService;
 		this.gameRepository = gameRepository;
@@ -67,6 +70,7 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		this.werewolfService = werewolfService;
 		this.hunterService = hunterService;
 		this.nightResultService = nightResultService;
+		this.nightActionRepository = nightActionRepository;
 		 // 必要な係（Service・倉庫）をまとめて受け取って、この GameController に入れる
 	}
 
@@ -127,6 +131,12 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		// 0より多いなら、hasVoted に true を入れる
 		// 1件でもあれば（＝誰か投票してれば）、その日はもう投票済み
 
+		boolean hasNight1Acted = !nightActionRepository.findByGameIdAndDayNumber(id, game.getDayNumber()).isEmpty();
+		// その日の夜の行動の記録を集めて、中身が入っているなら、true
+		
+		boolean hasNight2Resolved = game.getDayNumber().equals(game.getNightResolvedDay());
+		// 今の日付と、夜2の役職能力を処理した日付が同じなら、true
+
 		model.addAttribute("gameId", game.getId()); // 1.ゲームID
 		model.addAttribute("currentPhase", game.getCurrentPhase()); // 2.今のフェーズ
 		model.addAttribute("dayNumber", game.getDayNumber());
@@ -134,7 +144,9 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		model.addAttribute("gameResult", gameResult);
 		model.addAttribute("isFinished", isFinished);
 		model.addAttribute("hasVoted", hasVoted);
-		// 画面表示用のお盆(model)に、項目(名札)付きで6つ追加する
+		model.addAttribute("hasNight1Acted", hasNight1Acted);
+		model.addAttribute("hasNight2Resolved", hasNight2Resolved);
+		// 画面表示用のお盆(model)に、項目(名札)付きで追加する
 
 		return "game";
 		// 以上の処理が終わったら、この画面(game.html)を見せる
@@ -204,6 +216,12 @@ public class GameController { // ブラウザから指示が来たら、必要�
 		Game game = gameRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
 
+		if (!nightActionRepository.findByGameIdAndDayNumber(id, game.getDayNumber()).isEmpty()) {
+			return "redirect:/game/" + id;
+			// その日の夜の行動の記録を集めて、中身が入っているなら、true
+			// 既に記録あり → 何もせず戻す（占い/襲撃/護衛の重複作成を防ぐ）
+		}
+
 		fortuneTellerService.act(game);
 		werewolfService.act(game);
 		hunterService.act(game);
@@ -216,6 +234,12 @@ public class GameController { // ブラウザから指示が来たら、必要�
 	public String night2(@PathVariable Long id) {
 		Game game = gameRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("試合が見つからない: " + id));
+
+		if (game.getDayNumber().equals(game.getNightResolvedDay())) {
+			return "redirect:/game/" + id;
+			// 今の日付と、夜2の役職能力を処理した日付が同じなら、true
+			// 既に解決済み → 何もせず戻す（二重解決を防ぐ）
+		}
 
 		nightResultService.resolve(game);
 

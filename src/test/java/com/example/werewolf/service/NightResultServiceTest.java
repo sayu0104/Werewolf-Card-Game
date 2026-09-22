@@ -125,4 +125,26 @@ class NightResultServiceTest {
 			// 襲撃は行われていないので、全員生存しているはず
 		}
 	}
+
+	@Test
+	void resolveの後に夜2を解決した日が記録される() {
+		Game game = gameStartService.startGame();
+		List<GamePlayer> players = gamePlayerRepository.findByGameId(game.getId());
+
+		nightActionRepository.save(new NightAction(game.getId(), game.getDayNumber(), players.get(0).getId(), "襲撃",
+				players.get(1).getId()));
+
+		nightResultService.resolve(game);
+
+		assertThat(game.getNightResolvedDay()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 襲撃が無い夜でもresolveの後に夜2を解決した日が記録される() {
+		Game game = gameStartService.startGame();
+
+		nightResultService.resolve(game);
+
+		assertThat(game.getNightResolvedDay()).isEqualTo(game.getDayNumber());
+	}
 }
