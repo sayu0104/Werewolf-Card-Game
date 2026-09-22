@@ -82,6 +82,7 @@
 | status | VARCHAR(20) | NOT NULL | waiting / in_progress / finished |
 | current_phase | VARCHAR(20) | | morning / day / voting / night_selection / night_resolution（night_selection=夜1・対象選択、night_resolution=夜2・処理） |
 | day_number | INT | NOT NULL DEFAULT 1 | 現在の日数 |
+| night_resolved_day | INT | NULL | 夜2（結果処理）を解決した日。今のday_numberと同じなら、その日の夜2は処理済み |
 | winner_faction | VARCHAR(20) | NULL | ゲーム終了後に確定 |
 | is_single_player | BOOLEAN | NOT NULL DEFAULT FALSE | 1人プレイかどうか |
 | created_at | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | |

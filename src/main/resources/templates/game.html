@@ -17,7 +17,7 @@
         <p><span th:text="${dayNumber}"></span>日目</p>
         <p>現在のフェーズ：<span th:switch="${currentPhase.name()}"><span th:case="'MORNING'">朝・結果</span><span th:case="'DAY'">昼・相談</span><span th:case="'VOTE'">夕方・投票</span><span th:case="'NIGHT1'">夜・対象選択</span><span th:case="'NIGHT2'">夜・行動処理</span></span></p>
 
-        <form th:if="${!isFinished and (currentPhase.name() != 'VOTE' or hasVoted)}" th:action="@{/game/{id}/next(id=${gameId})}" method="post">
+        <form th:if="${!isFinished and (currentPhase.name() != 'VOTE' or hasVoted) and (currentPhase.name() != 'NIGHT1' or hasNight1Acted) and (currentPhase.name() != 'NIGHT2' or hasNight2Resolved)}" th:action="@{/game/{id}/next(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">次のフェーズへ</button>
         </form>
@@ -27,12 +27,12 @@
             <button type="submit">投票する</button>
         </form>
 
-        <form th:if="${currentPhase.name() == 'NIGHT1' and !isFinished}" th:action="@{/game/{id}/night1(id=${gameId})}" method="post">
+        <form th:if="${currentPhase.name() == 'NIGHT1' and !isFinished and !hasNight1Acted}" th:action="@{/game/{id}/night1(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">夜の行動</button>
         </form>
 
-        <form th:if="${currentPhase.name() == 'NIGHT2' and !isFinished}" th:action="@{/game/{id}/night2(id=${gameId})}" method="post">
+        <form th:if="${currentPhase.name() == 'NIGHT2' and !isFinished and !hasNight2Resolved}" th:action="@{/game/{id}/night2(id=${gameId})}" method="post">
             <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit">夜2の処理</button>
         </form>

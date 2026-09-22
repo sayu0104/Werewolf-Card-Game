@@ -4,6 +4,7 @@ import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.NightAction;
 import com.example.werewolf.repository.GamePlayerRepository;
+import com.example.werewolf.repository.GameRepository;
 import com.example.werewolf.repository.NightActionRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,13 @@ public class NightResultService { // 夜2の結果処理をする係(役職の�
 
 	private final NightActionRepository nightActionRepository;
 	private final GamePlayerRepository gamePlayerRepository;
+	private final GameRepository gameRepository;
 
-	public NightResultService(NightActionRepository nightActionRepository, GamePlayerRepository gamePlayerRepository) {
+	public NightResultService(NightActionRepository nightActionRepository, GamePlayerRepository gamePlayerRepository,
+			GameRepository gameRepository) {
 		this.nightActionRepository = nightActionRepository;
 		this.gamePlayerRepository = gamePlayerRepository;
+		this.gameRepository = gameRepository;
 	}
 
 	public void resolve(Game game) {
@@ -44,7 +48,9 @@ public class NightResultService { // 夜2の結果処理をする係(役職の�
 		}
 
 		if (attacks.isEmpty()) {
+			markResolved(game); 
 			return;
+			// 襲撃が無いなら、夜2の処理を終えた日付を記入して終わる
 		}
 
 		for (NightAction attack : attacks) {
@@ -94,8 +100,17 @@ public class NightResultService { // 夜2の結果処理をする係(役職の�
 				
 				guard.setIsSuccessful(false); // 失敗（成功してない）として記録する
 				nightActionRepository.save(guard);
-				// この護衛の成否（成功/失敗）を、役職の倉庫に保存する
+				// この護衛の成否（成功/失敗）を、夜の行動の記録の倉庫に保存する
 			}
 		}
+
+		markResolved(game);
+		// 夜2の処理が終わったことを保存する
+	}
+
+	// 夜2の処理が終わったことを保存する（今の日付を取ってきて、夜2の処理を終えた日付として記録する）
+	private void markResolved(Game game) {
+		game.setNightResolvedDay(game.getDayNumber());
+		gameRepository.save(game);
 	}
 }
