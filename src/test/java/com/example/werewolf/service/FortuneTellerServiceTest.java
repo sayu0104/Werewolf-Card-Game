@@ -95,6 +95,57 @@ class FortuneTellerServiceTest { // 占い師の役職のテスト
 		// （狂人は人狼陣営ではあるが、人狼ではないため）
 	}
 
+	@Test
+	void 前の夜に占った相手は次の夜に占わない() {
+		Game game = gameStartService.startGame();
+
+		List<NightAction> firstNight = fortuneTellerService.act(game);
+		Long firstTargetId = firstNight.get(0).getTargetGamePlayerId();
+		// 占い師に占いをさせて、その占った１件目のデータを読みとって占い先の人を用意する
+
+		game.setDayNumber(game.getDayNumber() + 1);
+		// その日付を、１日進める
+
+		List<NightAction> secondNight = fortuneTellerService.act(game);
+		Long secondTargetId = secondNight.get(0).getTargetGamePlayerId();
+		// 占い師に占いをさせて、その占った１件目のデータを読みとって占い先の人を用意する
+
+		assertThat(secondTargetId).isNotEqualTo(firstTargetId);
+		// 2日目に占った人と、1日目に占った人は違う人のはず
+	}
+
+	@Test
+	void 生存する占い先が全員占い済みなら占いの記録は作られない() {
+		Game game = gameStartService.startGame();
+
+		List<GamePlayer> players = gamePlayerRepository.findByGameId(game.getId());
+		GamePlayer fortuneTeller = players.stream()
+				.filter(player -> "占い師".equals(roleRepository.findById(player.getRoleId()).orElseThrow().getName()))
+				.findFirst()
+				.orElseThrow();
+		// 条件で絞って、占い師を探す
+
+		for (GamePlayer player : players) {
+			if (player.getId().equals(fortuneTeller.getId())) {
+				continue;
+				// 一人ずつ見て、もしgetしたプレイヤーIDと占い師のIDが同じなら続ける（占い師は飛ばす）
+			}
+			nightActionRepository
+					.save(new NightAction(game.getId(), game.getDayNumber(), fortuneTeller.getId(), "占い", player.getId()));
+			// 夜の行動の倉庫に、1人ずつ全員のデータを入れるから、占われたことになる
+		}
+
+		game.setDayNumber(game.getDayNumber() + 1);
+		// そのゲームを1日進める
+
+		List<NightAction> nightActions = fortuneTellerService.act(game);
+		// 占い師に占いをさせる
+
+		assertThat(nightActions).isEmpty();
+		// 占った結果、データは空のはず
+		// 同じ人は２回占わないため
+	}
+
 	// 指定した役職を必ず占わせて、その占いの記録を返す係（テスト用の下準備）
 	private NightAction divineOnlyRole(String targetRoleName) {
 		
