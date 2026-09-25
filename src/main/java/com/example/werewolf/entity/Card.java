@@ -21,8 +21,11 @@ public class Card {
 	@Column(nullable = false, length = 50) // 以下の変数に対して
 	private String name;
 
-	@Column(name = "card_type", nullable = false, length = 20)
-	private String cardType;// カードタイプ（種類）
+	@Column(name = "effect_type", nullable = false, length = 20)
+	private String effectType; // カードの効果　種類
+
+	@Column(nullable = false, length = 10)
+	private String timing; // カードを使うタイミング（昼/夜）
 
 	@Column(name = "required_role_id")
 	private Long requiredRoleId;// 必要な役職id
@@ -49,9 +52,10 @@ public class Card {
 	public Card() {
 	}
 
-	public Card(String name, String cardType, Integer cost) {// 新規作成時に最低限必要な項目
+	public Card(String name, String effectType, String timing, Integer cost) {// 新規作成時に最低限必要な項目
 		this.name = name;
-		this.cardType = cardType;// カードタイプ
+		this.effectType = effectType;
+		this.timing = timing;
 		this.cost = cost;// カードコスト
 	}
 
@@ -69,12 +73,20 @@ public class Card {
 		this.name = name;// 台帳と、それに記入する（紙）
 	}
 
-	public String getCardType() {
-		return cardType;
+	public String getEffectType() {
+		return effectType;
 	}
 
-	public void setCardType(String cardType) {
-		this.cardType = cardType;
+	public void setEffectType(String effectType) {
+		this.effectType = effectType;
+	}
+
+	public String getTiming() {
+		return timing;
+	}
+
+	public void setTiming(String timing) {
+		this.timing = timing;
 	}
 
 	public Long getRequiredRoleId() {

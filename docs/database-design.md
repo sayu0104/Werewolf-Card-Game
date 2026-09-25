@@ -106,8 +106,9 @@
 |---|---|---|---|
 | id | INT | PK, AUTO_INCREMENT | |
 | name | VARCHAR(50) | NOT NULL | 例:「疑う」「占い」「偽占い」 |
-| card_type | VARCHAR(20) | NOT NULL | role_card（役職専用）/ basic_card（基本） |
-| required_role_id | INT | FK -> roles.id, NULL | role_cardの場合、使用可能な役職 |
+| effect_type | VARCHAR(20) | NOT NULL | 効果の種類。被疑心操作 / 情報取得 / 宣言 / 報告 / 防御 / 除去 |
+| timing | VARCHAR(10) | NOT NULL | 使用できるタイミング。昼 / 夜 |
+| required_role_id | INT | FK -> roles.id, NULL | 使用可能な役職。NULLは役職を限定しない（配布は配布ロジック側で扱う） |
 | cost | TINYINT | NOT NULL | 共通コストプールでの消費量 |
 | is_mandatory | BOOLEAN | NOT NULL DEFAULT FALSE | 強制使用カードか（例: 占い師の占いカード） |
 | is_rare | BOOLEAN | NOT NULL DEFAULT FALSE | 1ゲーム1回限定などの希少カードか |
