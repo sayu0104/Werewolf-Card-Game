@@ -29,8 +29,9 @@ public class AdminCardController {
 	// @RequestParam = フォームに入力された値を受け取る係 (例：文字列で nameという箱で受け取る)
 	// (required = false) = この項目は入力必須じゃない（送られてこなくてもOK）
 
-	public String createCard(@RequestParam String name, @RequestParam String cardType,
-			@RequestParam(required = false) Long requiredRoleId, @RequestParam Integer cost,
+	public String createCard(@RequestParam String name, @RequestParam String effectType,
+			@RequestParam String timing, @RequestParam(required = false) Long requiredRoleId,
+			@RequestParam Integer cost,
 			@RequestParam(required = false, defaultValue = "false") Boolean isMandatory,
 			@RequestParam(required = false, defaultValue = "false") Boolean isRare,
 			@RequestParam(required = false) Integer value,
@@ -40,7 +41,8 @@ public class AdminCardController {
 		// Card(カード型の入れ物) card(cardという名前) 「Card型の、cardという名前の箱を用意する」 ← 左に新しいカードを1つ作って入れる
 		Card card = new Card();
 		card.setName(name);
-		card.setCardType(cardType);
+		card.setEffectType(effectType);
+		card.setTiming(timing);
 		card.setRequiredRoleId(requiredRoleId);
 		card.setCost(cost);
 		card.setIsMandatory(isMandatory);

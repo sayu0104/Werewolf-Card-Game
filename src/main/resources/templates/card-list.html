@@ -15,7 +15,8 @@
             <tr>
                 <th>ID</th>
                 <th>名前</th>
-                <th>種類</th>
+                <th>効果の種類</th>
+                <th>タイミング</th>
                 <th>必要役職ID</th>
                 <th>コスト</th>
                 <th>強制使用</th>
@@ -30,7 +31,8 @@
             <tr th:each="card : ${cards}">
                 <td th:text="${card.id}"></td>
                 <td th:text="${card.name}"></td>
-                <td th:text="${card.cardType}"></td>
+                <td th:text="${card.effectType}"></td>
+                <td th:text="${card.timing}"></td>
                 <td th:text="${card.requiredRoleId}"></td>
                 <td th:text="${card.cost}"></td>
                 <td th:text="${card.isMandatory}"></td>
@@ -50,7 +52,22 @@
     <h2>カードを追加</h2>
     <form th:action="@{/admin/cards}" method="post">
         <label>名前 <input type="text" name="name"></label>
-        <label>種類 <input type="text" name="cardType"></label>
+        <label>効果の種類
+            <select name="effectType">
+                <option value="被疑心操作">被疑心操作</option>
+                <option value="情報取得">情報取得</option>
+                <option value="宣言">宣言</option>
+                <option value="報告">報告</option>
+                <option value="防御">防御</option>
+                <option value="除去">除去</option>
+            </select>
+        </label>
+        <label>タイミング
+            <select name="timing">
+                <option value="昼">昼</option>
+                <option value="夜">夜</option>
+            </select>
+        </label>
         <label>必要役職ID <input type="number" name="requiredRoleId"></label>
         <label>コスト <input type="number" name="cost"></label>
         <label>強制使用 <input type="checkbox" name="isMandatory" value="true"></label>
