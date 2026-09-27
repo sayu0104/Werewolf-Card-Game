@@ -59,17 +59,29 @@ public class FortuneTellerService { // 占い師の役職について
 			if (target == null) { // 占い先がないなら
 				continue; // 占いはしない
 			}
-			NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
-					target.getId());
-			Role targetRole = roleRepository.findById(target.getRoleId())
-					.orElseThrow(() -> new IllegalArgumentException("役職が見つからない: " + target.getRoleId()));
-			nightAction.setIsWerewolf(WEREWOLF_ROLE_NAME.equals(targetRole.getName()));
-			// 占った人の役職名が「人狼」なら、trueという結果を出す
-			
-			nightActions.add(nightActionRepository.save(nightAction));
+			nightActions.add(divineOne(game, actor, target));
+			// 選んだ対象を divineOne に渡して占わせ、返ってきた記録をリストに足す
 		}
 
 		return nightActions;
+	}
+
+	// 1人を占う実行の部品（渡された対象を占って、白黒つきの記録を作って保存する）
+	// actからもカードからも呼ばれる共通の窓口
+	public NightAction divineOne(Game game, GamePlayer actor, GamePlayer target) {
+		if (game == null || actor == null || target == null) {
+			// もし、この中のどれかが空なら
+			throw new IllegalArgumentException("試合・占う人・占い先は必須");
+			// エラー
+		}
+		NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
+				target.getId());
+		Role targetRole = roleRepository.findById(target.getRoleId())
+				.orElseThrow(() -> new IllegalArgumentException("役職が見つからない: " + target.getRoleId()));
+		nightAction.setIsWerewolf(WEREWOLF_ROLE_NAME.equals(targetRole.getName()));
+		// 占った人の役職名が「人狼」なら、trueという結果を出す
+
+		return nightActionRepository.save(nightAction);
 	}
 
 	// 役職の能力発揮先を選ぶ
