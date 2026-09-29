@@ -28,9 +28,9 @@ FROM (
     UNION ALL SELECT '疑う（弱）', '被疑心操作', '昼', 1, 3, NULL, false, false, true
     UNION ALL SELECT '疑う（中）', '被疑心操作', '昼', 2, 5, NULL, false, false, true
     UNION ALL SELECT '疑う（強）', '被疑心操作', '昼', 3, 7, NULL, false, false, true
-    UNION ALL SELECT '擁護（弱）', '被疑心操作', '昼', 1, 3, NULL, false, false, true
-    UNION ALL SELECT '擁護（中）', '被疑心操作', '昼', 2, 5, NULL, false, false, true
-    UNION ALL SELECT '擁護（強）', '被疑心操作', '昼', 3, 7, NULL, false, false, true
+    UNION ALL SELECT '擁護（弱）', '被疑心操作', '昼', 1, -3, NULL, false, false, true
+    UNION ALL SELECT '擁護（中）', '被疑心操作', '昼', 2, -5, NULL, false, false, true
+    UNION ALL SELECT '擁護（強）', '被疑心操作', '昼', 3, -7, NULL, false, false, true
     UNION ALL SELECT '扇動', '被疑心操作', '昼', 1, 3, (SELECT id FROM roles WHERE name = '狂人'), false, false, true
     UNION ALL SELECT 'カウンター', '被疑心操作', '昼', 3, 5, (SELECT id FROM roles WHERE name = '人狼'), false, true, true
 ) v

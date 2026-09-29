@@ -112,7 +112,7 @@
 | cost | TINYINT | NOT NULL | 共通コストプールでの消費量 |
 | is_mandatory | BOOLEAN | NOT NULL DEFAULT FALSE | 強制使用カードか（例: 占い師の占いカード） |
 | is_rare | BOOLEAN | NOT NULL DEFAULT FALSE | 1ゲーム1回限定などの希少カードか |
-| value | TINYINT | NULL | 「疑い5」のような数値（ある場合） |
+| value | TINYINT | NULL | 「疑い5」のような数値（ある場合）。被疑心操作カードでは負の値も取りうる（擁護＝符号で下げを表す） |
 | is_usage_public | BOOLEAN | NOT NULL DEFAULT TRUE | カードの種類（何を使ったか）が公開されるか |
 | description | TEXT | | |
 

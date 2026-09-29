@@ -7,9 +7,11 @@ import com.example.werewolf.entity.CardEffectType;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.NightAction;
+import com.example.werewolf.entity.SuspicionPoint;
 import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.NightActionRepository;
 import com.example.werewolf.repository.RoleRepository;
+import com.example.werewolf.repository.SuspicionPointRepository;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ class CardPlayServiceTest {
 
 	@Autowired
 	private NightActionRepository nightActionRepository;
+
+	@Autowired
+	private SuspicionPointRepository suspicionPointRepository;
 
 	@Test
 	void 情報取得のカードで人狼を占うと黒の記録が作られる() {
@@ -147,6 +152,64 @@ class CardPlayServiceTest {
 		// 日付は同じなはず
 		// 襲撃を行った人のIDは同じなはず
 		// 襲撃をされた人のIDは同じなはず
+	}
+
+	@Test
+	void 疑うカードを使うと対象の被疑心が正の値で記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card card = new Card("疑う（弱）", CardEffectType.SUSPICION, "昼", 1);
+		card.setValue(3);
+		// 疑いをかける人として占い師、疑いをかけられる人として村人、
+		// そして疑う（弱）カードを、疑心ポイント＋３として用意する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, target);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+
+		assertThat(handled).isTrue();
+		// 疑う（弱）カードは使えた（true）なはず
+		
+		List<SuspicionPoint> points = suspicionPointRepository.findByGameIdAndGamePlayerId(game.getId(),
+				target.getId());
+		// 疑いをかけられたプレイヤー（村人）の疑心ポイントの記録を取ってくる
+		
+		assertThat(points).hasSize(1);
+		assertThat(points.get(0).getPointsDelta()).isEqualTo(3);
+		assertThat(points.get(0).getGameId()).isEqualTo(game.getId());
+		assertThat(points.get(0).getGamePlayerId()).isEqualTo(target.getId());
+		assertThat(points.get(0).getDayNumber()).isEqualTo(game.getDayNumber());
+		// その記録は１件なはず
+		// 疑心ポイントは３ポイント動いたはず
+		// ゲームのIDは同じなはず
+		// その記録のプレイヤーIDは、疑われたプレイヤー（村人）と同じなはず
+		// その記録の日付と、今のゲームの日付は同じなはず
+	}
+
+	@Test
+	void 擁護カードを使うと対象の被疑心が負の値で記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card card = new Card("擁護（弱）", CardEffectType.SUSPICION, "昼", 1);
+		card.setValue(-3);
+		// 疑いを擁護する人として占い師、擁護される人として村人、
+		// そして擁護（弱）カードを、疑心ポイント－３として用意する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, target);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+
+		assertThat(handled).isTrue();
+		// 擁護（弱）カードは使えた（true）なはず
+		
+		List<SuspicionPoint> points = suspicionPointRepository.findByGameIdAndGamePlayerId(game.getId(),
+				target.getId());
+		// 擁護をされたプレイヤー（村人）の疑心ポイントの記録を取ってくる
+		
+		assertThat(points).hasSize(1);
+		assertThat(points.get(0).getPointsDelta()).isEqualTo(-3);
+		// その記録は１件なはず
+		// 疑心ポイントは－３ポイント動いたはず
 	}
 
 	@Test

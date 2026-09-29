@@ -12,12 +12,14 @@ public class CardPlayService { // カード使用用のサービス
 	private final FortuneTellerService fortuneTellerService;
 	private final HunterService hunterService;
 	private final WerewolfService werewolfService;
+	private final SuspicionService suspicionService;
 
 	public CardPlayService(FortuneTellerService fortuneTellerService, HunterService hunterService,
-			WerewolfService werewolfService) {
+			WerewolfService werewolfService, SuspicionService suspicionService) {
 		this.fortuneTellerService = fortuneTellerService;
 		this.hunterService = hunterService;
 		this.werewolfService = werewolfService;
+		this.suspicionService = suspicionService;
 	}
 
 	// カードを使用したか、true または false　で返す
@@ -48,7 +50,14 @@ public class CardPlayService { // カード使用用のサービス
 			fortuneTellerService.divineOne(game, actor, target);
 			return true;
 		case CardEffectType.SUSPICION:
-			return false;
+			if (target == null) {
+				throw new IllegalArgumentException("被疑心操作のカードには対象が必須");
+			}
+			if (card.getValue() == null) {
+				throw new IllegalArgumentException("被疑心操作のカードには値が必須");
+			}
+			suspicionService.changeSuspicion(game, target, card.getValue());
+			return true;
 		case CardEffectType.DECLARATION:
 			return false;
 		case CardEffectType.REPORT:
