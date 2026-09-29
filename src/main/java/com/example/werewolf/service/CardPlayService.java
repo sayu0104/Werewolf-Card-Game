@@ -10,9 +10,14 @@ import org.springframework.stereotype.Service;
 public class CardPlayService { // カード使用用のサービス
 
 	private final FortuneTellerService fortuneTellerService;
+	private final HunterService hunterService;
+	private final WerewolfService werewolfService;
 
-	public CardPlayService(FortuneTellerService fortuneTellerService) {
+	public CardPlayService(FortuneTellerService fortuneTellerService, HunterService hunterService,
+			WerewolfService werewolfService) {
 		this.fortuneTellerService = fortuneTellerService;
+		this.hunterService = hunterService;
+		this.werewolfService = werewolfService;
 	}
 
 	// カードを使用したか、true または false　で返す
@@ -49,9 +54,17 @@ public class CardPlayService { // カード使用用のサービス
 		case CardEffectType.REPORT:
 			return false;
 		case CardEffectType.DEFENSE:
-			return false;
+			if (target == null) {
+				throw new IllegalArgumentException("防御のカードには対象が必須");
+			}
+			hunterService.guardOne(game, actor, target);
+			return true;
 		case CardEffectType.REMOVAL:
-			return false;
+			if (target == null) {
+				throw new IllegalArgumentException("除去のカードには対象が必須");
+			}
+			werewolfService.attackOne(game, actor, target);
+			return true;
 		default:
 			return false;
 		}
