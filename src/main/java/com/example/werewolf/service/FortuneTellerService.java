@@ -66,13 +66,10 @@ public class FortuneTellerService { // 占い師の役職について
 		return nightActions;
 	}
 
-	// 1人を占う実行の部品（渡された対象を占って、白黒つきの記録を作って保存する）
-	// actからもカードからも呼ばれる共通の窓口
+	// それぞれの項目が空でないことを確認して、占いの記録を作って保存する（誰が、誰を、占った）
 	public NightAction divineOne(Game game, GamePlayer actor, GamePlayer target) {
 		if (game == null || actor == null || target == null) {
-			// もし、この中のどれかが空なら
 			throw new IllegalArgumentException("試合・占う人・占い先は必須");
-			// エラー
 		}
 		NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
 				target.getId());

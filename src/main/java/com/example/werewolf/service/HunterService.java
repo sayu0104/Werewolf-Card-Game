@@ -50,12 +50,20 @@ public class HunterService { // 狩人の役職について
 
 			// 3.護衛先を決めて保存
 			GamePlayer target = chooseTarget(alivePlayers, actor);
-			NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
-					target.getId());
-			nightActions.add(nightActionRepository.save(nightAction));
+			nightActions.add(guardOne(game, actor, target));
 		}
 
 		return nightActions;
+	}
+
+	// それぞれの項目が空でないことを確認して、護衛の記録を作って保存する（誰が、誰を、護衛した）
+	public NightAction guardOne(Game game, GamePlayer actor, GamePlayer target) {
+		if (game == null || actor == null || target == null) {
+			throw new IllegalArgumentException("試合・護衛する人・護衛先は必須");
+		}
+		NightAction nightAction = new NightAction(game.getId(), game.getDayNumber(), actor.getId(), ACTION_TYPE,
+				target.getId());
+		return nightActionRepository.save(nightAction);
 	}
 
 	// 役職の能力発揮先を選ぶ
