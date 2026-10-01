@@ -187,6 +187,42 @@ class CardPlayServiceTest {
 	}
 
 	@Test
+	void 扇動カードを使うと対象と自分の被疑心が両方上がる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "狂人");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card card = new Card("扇動", CardEffectType.INCITE, "昼", 1);
+		card.setValue(10);
+		// カードを使う人として狂人、使われる対象として村人
+		// 扇動カードを疑心ポイント+10与えるものとして用意する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, target);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+
+		assertThat(handled).isTrue();
+		// 扇動カードは使えた（true）なはず
+
+		List<SuspicionPoint> targetPoints = suspicionPointRepository.findByGameIdAndGamePlayerId(game.getId(),
+				target.getId());
+		List<SuspicionPoint> actorPoints = suspicionPointRepository.findByGameIdAndGamePlayerId(game.getId(),
+				actor.getId());
+		// カードを使った人（狂人）と、使われた人（村人）の疑心ポイントの記録を取ってくる
+
+		assertThat(targetPoints).hasSize(1);
+		assertThat(targetPoints.get(0).getPointsDelta()).isEqualTo(10);
+		assertThat(targetPoints.get(0).getGamePlayerId()).isEqualTo(target.getId());
+		assertThat(actorPoints).hasSize(1);
+		assertThat(actorPoints.get(0).getPointsDelta()).isEqualTo(3);
+		assertThat(actorPoints.get(0).getGamePlayerId()).isEqualTo(actor.getId());
+		// そのカードを使われた人の記録は１件なはず
+		// 疑心ポイントは+10動いたはず
+		// その記録のプレイヤーIDは、カードを使われたプレイヤー（村人）と同じなはず
+		// そのカードを使った人の記録は１件なはず
+		// 疑心ポイントは+3動いたはず（扇動カードで疑いをかけた分の30%が本人に入るため）
+		// その記録のプレイヤーIDは、カードを使ったプレイヤー（狂人）と同じなはず
+	}
+
+	@Test
 	void 擁護カードを使うと対象の被疑心が負の値で記録される() {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "占い師");
