@@ -58,8 +58,12 @@ public class CardPlayService { // カード使用用のサービス
 			}
 			if (card.getSelfRate() != null && card.getSelfRate() > 0) {
 				suspicionService.incite(game, actor, target, card.getValue(), card.getSelfRate());
+				// もし、このカードの self_rate が「空じゃない」かつ「0より大きい」なら
+				// 扇動カード（incite で相手＋本人の両方に記録する）
+				
 			} else {
 				suspicionService.changeSuspicion(game, target, card.getValue());
+				// もし、そうでなければ（0、または空）、相手にだけ記録する
 			}
 			return true;
 		case CardEffectType.DECLARATION:

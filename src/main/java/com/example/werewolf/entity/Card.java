@@ -43,7 +43,7 @@ public class Card {
 	private Integer value;// カードが持つ価値（値）
 
 	@Column(name = "self_rate", nullable = false)
-	private Double selfRate = 0.0;
+	private Double selfRate = 0.0; // カードを使った本人に返ってくる疑いの割合（0なら返らない）
 
 	@Column(name = "is_usage_public", nullable = false)
 	private Boolean isUsagePublic = true;// カードを使用したか、他の人に見えるか？＝はい

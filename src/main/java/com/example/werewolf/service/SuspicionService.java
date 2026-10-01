@@ -26,14 +26,14 @@ public class SuspicionService { // 疑心ポイントの変化を処理するク
 	}
 
 	// 扇動メソッド（相手に疑心を大きく向けるが、自分にも疑いが入る）
-	// 相手に+x、自分にはその約3割(+y)を記録する（changeSuspicionを2回使う）
+	// 相手に+x、自分にはその割合分（self_rate）の +y を記録する（changeSuspicionを2回使う）
 	public void incite(Game game, GamePlayer actor, GamePlayer target, int x, double selfRate) {
 		if (game == null || actor == null || target == null) {
 			throw new IllegalArgumentException("試合・使用者・対象は必須");
 		}
 		int y = (int) Math.round(x * selfRate);
 		// int 型の ｙ の箱に、整数にして数値を入れる
-		// 相手の疑心ポイント（x）が ×0.3 で、30%が入る
+		// 相手の疑心ポイント（x）が ×selfRate（扇動なら0.3） で、30%が入る
 		// 内側から計算する
 		
 		changeSuspicion(game, target, x);
