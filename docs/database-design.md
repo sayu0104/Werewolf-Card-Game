@@ -106,13 +106,14 @@
 |---|---|---|---|
 | id | INT | PK, AUTO_INCREMENT | |
 | name | VARCHAR(50) | NOT NULL | 例:「疑う」「占い」「偽占い」 |
-| effect_type | VARCHAR(20) | NOT NULL | 効果の種類。被疑心操作 / 扇動 / 情報取得 / 宣言 / 報告 / 防御 / 除去 |
+| effect_type | VARCHAR(20) | NOT NULL | 効果の種類。被疑心操作 / 情報取得 / 宣言 / 報告 / 防御 / 除去 |
 | timing | VARCHAR(10) | NOT NULL | 使用できるタイミング。昼 / 夜 |
 | required_role_id | INT | FK -> roles.id, NULL | 使用可能な役職。NULLは役職を限定しない（配布は配布ロジック側で扱う） |
 | cost | TINYINT | NOT NULL | 共通コストプールでの消費量 |
 | is_mandatory | BOOLEAN | NOT NULL DEFAULT FALSE | 強制使用カードか（例: 占い師の占いカード） |
 | is_rare | BOOLEAN | NOT NULL DEFAULT FALSE | 1ゲーム1回限定などの希少カードか |
 | value | TINYINT | NULL | 「疑い5」のような数値（ある場合）。被疑心操作カードでは負の値も取りうる（擁護＝符号で下げを表す） |
+| self_rate | DOUBLE | NOT NULL DEFAULT 0 | 使用者にも返る被疑心の割合。0より大きいと、対象に加算したvalueの約その割合を使用者にも加算する（例: 扇動=0.3） |
 | is_usage_public | BOOLEAN | NOT NULL DEFAULT TRUE | カードの種類（何を使ったか）が公開されるか |
 | description | TEXT | | |
 

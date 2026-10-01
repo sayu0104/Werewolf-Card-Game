@@ -191,8 +191,9 @@ class CardPlayServiceTest {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "狂人");
 		GamePlayer target = findByRoleName(game, "村人");
-		Card card = new Card("扇動", CardEffectType.INCITE, "昼", 1);
+		Card card = new Card("扇動", CardEffectType.SUSPICION, "昼", 1);
 		card.setValue(10);
+		card.setSelfRate(0.3);
 		// カードを使う人として狂人、使われる対象として村人
 		// 扇動カードを疑心ポイント+10与えるものとして用意する
 

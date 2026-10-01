@@ -56,16 +56,11 @@ public class CardPlayService { // カード使用用のサービス
 			if (card.getValue() == null) {
 				throw new IllegalArgumentException("被疑心操作のカードには値が必須");
 			}
-			suspicionService.changeSuspicion(game, target, card.getValue());
-			return true;
-		case CardEffectType.INCITE:
-			if (target == null) {
-				throw new IllegalArgumentException("扇動のカードには対象が必須");
+			if (card.getSelfRate() != null && card.getSelfRate() > 0) {
+				suspicionService.incite(game, actor, target, card.getValue(), card.getSelfRate());
+			} else {
+				suspicionService.changeSuspicion(game, target, card.getValue());
 			}
-			if (card.getValue() == null) {
-				throw new IllegalArgumentException("扇動のカードには値が必須");
-			}
-			suspicionService.incite(game, actor, target, card.getValue());
 			return true;
 		case CardEffectType.DECLARATION:
 			return false;
