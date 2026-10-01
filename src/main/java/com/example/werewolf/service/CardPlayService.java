@@ -58,6 +58,15 @@ public class CardPlayService { // カード使用用のサービス
 			}
 			suspicionService.changeSuspicion(game, target, card.getValue());
 			return true;
+		case CardEffectType.INCITE:
+			if (target == null) {
+				throw new IllegalArgumentException("扇動のカードには対象が必須");
+			}
+			if (card.getValue() == null) {
+				throw new IllegalArgumentException("扇動のカードには値が必須");
+			}
+			suspicionService.incite(game, actor, target, card.getValue());
+			return true;
 		case CardEffectType.DECLARATION:
 			return false;
 		case CardEffectType.REPORT:
