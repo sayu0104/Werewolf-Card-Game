@@ -42,6 +42,9 @@ public class Card {
 	@Column
 	private Integer value;// カードが持つ価値（値）
 
+	@Column(name = "self_rate", nullable = false)
+	private Double selfRate = 0.0;
+
 	@Column(name = "is_usage_public", nullable = false)
 	private Boolean isUsagePublic = true;// カードを使用したか、他の人に見えるか？＝はい
 
@@ -127,6 +130,14 @@ public class Card {
 
 	public void setValue(Integer value) {
 		this.value = value;
+	}
+
+	public Double getSelfRate() {
+		return selfRate;
+	}
+
+	public void setSelfRate(Double selfRate) {
+		this.selfRate = selfRate;
 	}
 
 	public Boolean getIsUsagePublic() {
