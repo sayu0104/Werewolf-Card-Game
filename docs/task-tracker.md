@@ -70,8 +70,8 @@ MVP（最小限の完成形）までのロードマップ。1行＝1Issue。完�
   - [x] ✅ #147 第2歩：カードを使う骨格（CardPlayServiceを作り、effect_typeをswitchで振り分けるディスパッチャ。占いの「夜まとめて処理」とカードの「1人1枚」の粒度が噛み合わないため情報取得は枝を通す確認のみ（trueを返す）に留め、実接続は第3歩へ。手札/配布・使用ログは含めない）（PR #148）
   - [x] ✅ #150 第3歩：情報取得の効果（占い）（FortuneTellerServiceにdivineOneを切り出し、actとカードの両方から占いを実行。投票観察は未実装で後回し）（PR #151）
   - [x] ✅ #153 第4歩：防御・除去の効果（HunterServiceにguardOne、WerewolfServiceにattackOneを切り出し、CardPlayServiceの防御・除去の枝から呼べるようにした）（PR #154）
-  - [x] ✅ #156 第5歩：被疑心操作の効果（疑う・擁護）（SuspicionPointRepository・SuspicionServiceを新規作成し、CardPlayServiceの被疑心操作の枝から対象の被疑心ポイントを増減して記録。案B＝valueの符号で上げ下げ。カウンターは未実装で後回し。扇動は #159 で別途実装）（PR #157）
-  - [x] ✅ #159 第5歩＋：扇動の効果（SuspicionServiceにinciteを新規。相手に+x、使用者にその約30%＝round(x*0.3)を加算し「扇動した本人にも疑いが入る」を表現。案C＝扇動を独自のeffect_type「扇動」に分離。カウンターは後回し）（PR #160）
+  - [x] ✅ #156 第5歩：被疑心操作の効果（疑う・擁護）（SuspicionPointRepository・SuspicionServiceを新規作成し、CardPlayServiceの被疑心操作の枝から対象の被疑心ポイントを増減して記録。案B＝valueの符号で上げ下げ。カウンターは未実装で後回し。扇動は別途実装＝下行）（PR #157）
+  - [x] ✅ #159→#161 第5歩＋：扇動の効果（SuspicionServiceにinciteを新規。相手に+value、使用者にその割合分（self_rate）を加算し「扇動した本人にも疑いが入る」を表現。当初は独自effect_type「扇動」で実装（案C／#159・PR #160）したが、effect_typeはカテゴリ名であるべきとの判断でcardsにself_rate列を追加し被疑心操作に統合（案D／#161・PR #162）。扇動のself_rate=0.3、既存DBは手動UPDATE済み。カウンターは後回し）
   - [ ] ⬜ 第6歩：宣言・報告の効果（名乗り/騙り/結果報告/偽報告）
   - [ ] ⬜ 手札・配布システム（GamePlayerHand/CardUsageLogのリポジトリ、山札からカードを配る・手札に持たせる・使用を記録する。プレイ画面の前提。時期は後で）
 - [ ] ⬜ #66 被疑心ポイント（⚠️設計待ち）… A（カード使用制限）・B（強制イベント）のトリガー
