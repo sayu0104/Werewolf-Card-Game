@@ -254,7 +254,7 @@ class CardPlayServiceTest {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "占い師");
 		GamePlayer target = findByRoleName(game, "村人");
-		Card card = new Card("宣言カード", CardEffectType.DECLARATION, "昼", 1);
+		Card card = new Card("報告カード", CardEffectType.REPORT, "昼", 1);
 
 		boolean handled = cardPlayService.playCard(game, actor, card, target);
 
@@ -262,6 +262,51 @@ class CardPlayServiceTest {
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "占い")).isEmpty();
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "護衛")).isEmpty();
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "襲撃")).isEmpty();
+	}
+
+	@Test
+	void 名乗りカードで占い師が名乗ると自分の役職と現在日が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null);
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 名乗りカードで狩人が名乗ると自分の役職と現在日が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "狩人");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null);
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 名乗り済みの2回目の名乗りはfalseで内容は変わらない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		cardPlayService.playCard(game, actor, card, null);
+		Integer firstDay = actor.getClaimedAtDay();
+		game.setDayNumber(game.getDayNumber() + 1);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null);
+
+		assertThat(handled).isFalse();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
+		assertThat(saved.getClaimedAtDay()).isEqualTo(firstDay);
 	}
 
 	// 役職の名前で絞って探す

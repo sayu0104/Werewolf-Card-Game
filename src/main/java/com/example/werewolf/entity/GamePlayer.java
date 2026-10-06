@@ -36,6 +36,12 @@ public class GamePlayer {
 	@Column(name = "seat_order", nullable = false)
 	private Integer seatOrder;// 座席順（Integer）
 
+	@Column(name = "claimed_role_id")
+	private Long claimedRoleId;
+
+	@Column(name = "claimed_at_day")
+	private Integer claimedAtDay;
+
 	// JPAが利用するための引数なしコンストラクタ
 	public GamePlayer() {
 	}
@@ -99,5 +105,21 @@ public class GamePlayer {
 
 	public void setSeatOrder(Integer seatOrder) {
 		this.seatOrder = seatOrder;
+	}
+
+	public Long getClaimedRoleId() {
+		return claimedRoleId;
+	}
+
+	public void setClaimedRoleId(Long claimedRoleId) {
+		this.claimedRoleId = claimedRoleId;
+	}
+
+	public Integer getClaimedAtDay() {
+		return claimedAtDay;
+	}
+
+	public void setClaimedAtDay(Integer claimedAtDay) {
+		this.claimedAtDay = claimedAtDay;
 	}
 }

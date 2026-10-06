@@ -4,6 +4,7 @@ import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
+import com.example.werewolf.repository.GamePlayerRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,13 +14,16 @@ public class CardPlayService { // カード使用用のサービス
 	private final HunterService hunterService;
 	private final WerewolfService werewolfService;
 	private final SuspicionService suspicionService;
+	private final GamePlayerRepository gamePlayerRepository;
 
 	public CardPlayService(FortuneTellerService fortuneTellerService, HunterService hunterService,
-			WerewolfService werewolfService, SuspicionService suspicionService) {
+			WerewolfService werewolfService, SuspicionService suspicionService,
+			GamePlayerRepository gamePlayerRepository) {
 		this.fortuneTellerService = fortuneTellerService;
 		this.hunterService = hunterService;
 		this.werewolfService = werewolfService;
 		this.suspicionService = suspicionService;
+		this.gamePlayerRepository = gamePlayerRepository;
 	}
 
 	// カードを使用したか、true または false　で返す
@@ -67,7 +71,13 @@ public class CardPlayService { // カード使用用のサービス
 			}
 			return true;
 		case CardEffectType.DECLARATION:
-			return false;
+			if (actor.getClaimedRoleId() != null) {
+				return false;
+			}
+			actor.setClaimedRoleId(actor.getRoleId());
+			actor.setClaimedAtDay(game.getDayNumber());
+			gamePlayerRepository.save(actor);
+			return true;
 		case CardEffectType.REPORT:
 			return false;
 		case CardEffectType.DEFENSE:
