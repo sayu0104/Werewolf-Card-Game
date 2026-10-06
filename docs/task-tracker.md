@@ -72,7 +72,12 @@ MVP（最小限の完成形）までのロードマップ。1行＝1Issue。完�
   - [x] ✅ #153 第4歩：防御・除去の効果（HunterServiceにguardOne、WerewolfServiceにattackOneを切り出し、CardPlayServiceの防御・除去の枝から呼べるようにした）（PR #154）
   - [x] ✅ #156 第5歩：被疑心操作の効果（疑う・擁護）（SuspicionPointRepository・SuspicionServiceを新規作成し、CardPlayServiceの被疑心操作の枝から対象の被疑心ポイントを増減して記録。案B＝valueの符号で上げ下げ。カウンターは未実装で後回し。扇動は別途実装＝下行）（PR #157）
   - [x] ✅ #159→#161 第5歩＋：扇動の効果（SuspicionServiceにinciteを新規。相手に+value、使用者にその割合分（self_rate）を加算し「扇動した本人にも疑いが入る」を表現。当初は独自effect_type「扇動」で実装（案C／#159・PR #160）したが、effect_typeはカテゴリ名であるべきとの判断でcardsにself_rate列を追加し被疑心操作に統合（案D／#161・PR #162）。扇動のself_rate=0.3、既存DBは手動UPDATE済み。カウンターは後回し）
-  - [ ] ⬜ 第6歩：宣言・報告の効果（名乗り/騙り/結果報告/偽報告）
+  - [ ] ⬜ 第6歩：宣言・報告の効果（名乗り/騙り/結果報告/偽報告）※大きいので6-1〜6-5に小分け
+    - [x] ✅ #166 6-1 名乗り（村側）＋役職の真偽土台（game_playersに claimed_role_id・claimed_at_day を追加。CardPlayServiceの宣言の枝で「自分の本当の役職＋名乗った日」を記録。名乗りは1回のみ＝2回目はfalse。真偽＝claimed_role_id vs role_id の照合。騙り・報告は後続）（PR #167）
+    - [ ] ⬜ 6-2 騙り（狼側）：村側役職を選んで記録（役職選択の入力を足す・faction で村側のみ許可）
+    - [ ] ⬜ 6-3 結果報告（村側）：名乗り済み前提、night_actionsの真実を card_usage_logs に自動記録
+    - [ ] ⬜ 6-4 偽報告（狼側）：本人が中身（対象＋白/黒/占えなかった）を選んで記録
+    - [ ] ⬜ 6-5 毎ターン強制・過去日遡り：一度名乗ったら毎ターン報告、後から名乗ると過去日分を生成
   - [ ] ⬜ 手札・配布システム（GamePlayerHand/CardUsageLogのリポジトリ、山札からカードを配る・手札に持たせる・使用を記録する。プレイ画面の前提。時期は後で）
 - [ ] ⬜ #66 被疑心ポイント（⚠️設計待ち）… A（カード使用制限）・B（強制イベント）のトリガー
 
