@@ -47,12 +47,16 @@ public class CardPlayService { // カード使用用のサービス
 		// それぞれのカードを効果の種類で仕分けて、その効果を発揮させる
 		// ※まだ中身を作ってない種類なので、今は false（第3歩以降で埋める）
 		switch (card.getEffectType()) {
+		
+		// 「情報取得」のカードの場合
 		case CardEffectType.INFORMATION:
 			if (target == null) {
 				throw new IllegalArgumentException("情報取得のカードには対象が必須");
 			}
 			fortuneTellerService.divineOne(game, actor, target);
 			return true;
+			
+		// 「被疑心操作」のカードの場合
 		case CardEffectType.SUSPICION:
 			if (target == null) {
 				throw new IllegalArgumentException("被疑心操作のカードには対象が必須");
@@ -70,22 +74,33 @@ public class CardPlayService { // カード使用用のサービス
 				// もし、そうでなければ（0、または空）、相手にだけ記録する
 			}
 			return true;
+			
+		// 「宣言」のカードの場合
 		case CardEffectType.DECLARATION:
 			if (actor.getClaimedRoleId() != null) {
 				return false;
+				// 既に名乗ってたら false＝名乗りは1回だけ
 			}
 			actor.setClaimedRoleId(actor.getRoleId());
 			actor.setClaimedAtDay(game.getDayNumber());
 			gamePlayerRepository.save(actor);
+			// 役職を宣言した（名乗った）時に、名乗った役職と、その名乗った日付を記録
+			
 			return true;
+			
+		// 「報告」のカードの場合
 		case CardEffectType.REPORT:
 			return false;
+			
+		// 「防御」のカードの場合
 		case CardEffectType.DEFENSE:
 			if (target == null) {
 				throw new IllegalArgumentException("防御のカードには対象が必須");
 			}
 			hunterService.guardOne(game, actor, target);
 			return true;
+			
+		// 「除去」のカードの場合
 		case CardEffectType.REMOVAL:
 			if (target == null) {
 				throw new IllegalArgumentException("除去のカードには対象が必須");

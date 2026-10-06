@@ -37,10 +37,10 @@ public class GamePlayer {
 	private Integer seatOrder;// 座席順（Integer）
 
 	@Column(name = "claimed_role_id")
-	private Long claimedRoleId;
+	private Long claimedRoleId;// 名乗った役職のID（null＝まだ名乗ってない）
 
 	@Column(name = "claimed_at_day")
-	private Integer claimedAtDay;
+	private Integer claimedAtDay;// 名乗った日の日付（null＝まだ名乗ってない）
 
 	// JPAが利用するための引数なしコンストラクタ
 	public GamePlayer() {
