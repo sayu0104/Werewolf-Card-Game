@@ -4,7 +4,9 @@ import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
+import com.example.werewolf.entity.Role;
 import com.example.werewolf.repository.GamePlayerRepository;
+import com.example.werewolf.repository.RoleRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,19 +17,28 @@ public class CardPlayService { // カード使用用のサービス
 	private final WerewolfService werewolfService;
 	private final SuspicionService suspicionService;
 	private final GamePlayerRepository gamePlayerRepository;
+	private final RoleRepository roleRepository;
+
+	private static final String VILLAGER_FACTION = "村人陣営";
+	private static final String WEREWOLF_FACTION = "人狼陣営";
 
 	public CardPlayService(FortuneTellerService fortuneTellerService, HunterService hunterService,
 			WerewolfService werewolfService, SuspicionService suspicionService,
-			GamePlayerRepository gamePlayerRepository) {
+			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository) {
 		this.fortuneTellerService = fortuneTellerService;
 		this.hunterService = hunterService;
 		this.werewolfService = werewolfService;
 		this.suspicionService = suspicionService;
 		this.gamePlayerRepository = gamePlayerRepository;
+		this.roleRepository = roleRepository;
 	}
 
 	// カードを使用したか、true または false　で返す
 	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target) {
+		return playCard(game, actor, card, target, null);
+	}
+
+	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId) {
 		if (game == null) {
 			throw new IllegalArgumentException("試合は必須");
 			// もし、ゲームが空なら、エラーを出す
@@ -81,7 +92,23 @@ public class CardPlayService { // カード使用用のサービス
 				return false;
 				// 既に名乗ってたら false＝名乗りは1回だけ
 			}
-			actor.setClaimedRoleId(actor.getRoleId());
+			Role actorRole = roleRepository.findById(actor.getRoleId())
+					.orElseThrow(() -> new IllegalArgumentException("使用者の役職が存在しない"));
+			if (VILLAGER_FACTION.equals(actorRole.getFaction())) {
+				actor.setClaimedRoleId(actor.getRoleId());
+			} else if (WEREWOLF_FACTION.equals(actorRole.getFaction())) {
+				if (declaredRoleId == null) {
+					throw new IllegalArgumentException("騙りには役職の指定が必須");
+				}
+				Role declaredRole = roleRepository.findById(declaredRoleId)
+						.orElseThrow(() -> new IllegalArgumentException("指定した役職が存在しない"));
+				if (!VILLAGER_FACTION.equals(declaredRole.getFaction())) {
+					throw new IllegalArgumentException("騙れるのは村側の役職のみ");
+				}
+				actor.setClaimedRoleId(declaredRoleId);
+			} else {
+				return false;
+			}
 			actor.setClaimedAtDay(game.getDayNumber());
 			gamePlayerRepository.save(actor);
 			// 役職を宣言した（名乗った）時に、名乗った役職と、その名乗った日付を記録

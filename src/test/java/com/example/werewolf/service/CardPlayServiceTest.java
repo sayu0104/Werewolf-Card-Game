@@ -1,6 +1,7 @@
 package com.example.werewolf.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
@@ -307,6 +308,88 @@ class CardPlayServiceTest {
 		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
 		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
 		assertThat(saved.getClaimedAtDay()).isEqualTo(firstDay);
+	}
+
+	@Test
+	void 人狼が騙りで占い師を名乗ると指定役職と現在日が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 狂人も騙りで占い師を名乗れる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		actor.setRoleId(roleRepository.findByName("狂人").orElseThrow().getId());
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 人狼側の役職を騙ろうとするとエラーになり記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		for (String roleName : List.of("人狼", "狂人")) {
+			Long wolfSideId = roleRepository.findByName(roleName).orElseThrow().getId();
+			assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null, wolfSideId))
+					.isInstanceOf(IllegalArgumentException.class);
+		}
+		assertThat(actor.getClaimedRoleId()).isNull();
+	}
+
+	@Test
+	void 存在しない役職を騙ろうとするとエラーになる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null, -1L))
+				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void 役職指定なしで人狼が宣言するとエラーになる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(actor.getClaimedRoleId()).isNull();
+	}
+
+	@Test
+	void 騙り済みの2回目はfalseで内容は変わらない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Long hunterId = roleRepository.findByName("狩人").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, hunterId);
+
+		assertThat(handled).isFalse();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
 	}
 
 	// 役職の名前で絞って探す
