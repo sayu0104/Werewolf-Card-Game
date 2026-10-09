@@ -36,9 +36,13 @@ public class CardPlayService { // カード使用用のサービス
 	// カードを使用したか、true または false　で返す
 	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target) {
 		return playCard(game, actor, card, target, null);
+		// 4つで呼ばれたら、5つ目(declaredRoleId)を常にnullにして5引数版へ渡す（＝役職指定なし）
+		// 騙りで役職を指定したいときは、この4引数版じゃなく5引数版を直接呼ぶ
 	}
 
 	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId) {
+		// null＝村側 / 役職ID＝狼側
+		
 		if (game == null) {
 			throw new IllegalArgumentException("試合は必須");
 			// もし、ゲームが空なら、エラーを出す
@@ -95,17 +99,28 @@ public class CardPlayService { // カード使用用のサービス
 			Role actorRole = roleRepository.findById(actor.getRoleId())
 					.orElseThrow(() -> new IllegalArgumentException("使用者の役職が存在しない"));
 			if (VILLAGER_FACTION.equals(actorRole.getFaction())) {
+				// もし、村人陣営と、カードを使用する人の役職の陣営が同じなら…
+				
 				actor.setClaimedRoleId(actor.getRoleId());
+				// 名乗った役職のIDとして設定
+				
 			} else if (WEREWOLF_FACTION.equals(actorRole.getFaction())) {
+				// そうではなく、もし人狼陣営とカードを使用する役職の陣営が同じなら…
+				
 				if (declaredRoleId == null) {
 					throw new IllegalArgumentException("騙りには役職の指定が必須");
 				}
 				Role declaredRole = roleRepository.findById(declaredRoleId)
 						.orElseThrow(() -> new IllegalArgumentException("指定した役職が存在しない"));
 				if (!VILLAGER_FACTION.equals(declaredRole.getFaction())) {
+					// もし、村人陣営と宣言した役職の陣営が同じではないのなら…
+					
 					throw new IllegalArgumentException("騙れるのは村側の役職のみ");
+					// （村人陣営の役職しか宣言できない）
 				}
 				actor.setClaimedRoleId(declaredRoleId);
+				// （偽の役職を）宣言した役職として設定
+				
 			} else {
 				return false;
 			}
