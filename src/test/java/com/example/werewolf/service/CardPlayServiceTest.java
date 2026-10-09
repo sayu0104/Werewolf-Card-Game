@@ -1,6 +1,7 @@
 package com.example.werewolf.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
@@ -255,13 +256,19 @@ class CardPlayServiceTest {
 		GamePlayer actor = findByRoleName(game, "占い師");
 		GamePlayer target = findByRoleName(game, "村人");
 		Card card = new Card("報告カード", CardEffectType.REPORT, "昼", 1);
+		// 実行する人として占い師、その対象先として村人、報告カードを用意する
 
 		boolean handled = cardPlayService.playCard(game, actor, card, target);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
 
 		assertThat(handled).isFalse();
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "占い")).isEmpty();
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "護衛")).isEmpty();
 		assertThat(nightActionRepository.findByGameIdAndActionType(game.getId(), "襲撃")).isEmpty();
+		// カードは使用できなかったはず（false）
+		// 夜の行動記録として、占いは記録されていないはず
+		// 夜の行動記録として、護衛は記録されていないはず
+		// 夜の行動記録として、襲撃は記録されていないはず
 	}
 
 	@Test
@@ -269,13 +276,19 @@ class CardPlayServiceTest {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "占い師");
 		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として占い師、名乗りカードを用意する
 
 		boolean handled = cardPlayService.playCard(game, actor, card, null);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
 
 		assertThat(handled).isTrue();
 		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
 		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
 		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+		// カードは使用できたはず（true）
+		// ゲームプレイヤーの倉庫に、実行した人（占い師）のIDを取ってくる
+		// その保存した記録にある名乗った役職IDと、実行した人（占い師）の役職IDは同じはず
+		// その保存した記録にある名乗った日の日付と、今のゲーム日付は同じはず
 	}
 
 	@Test
@@ -283,13 +296,19 @@ class CardPlayServiceTest {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "狩人");
 		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として狩人、名乗りカードを用意する
 
 		boolean handled = cardPlayService.playCard(game, actor, card, null);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
 
 		assertThat(handled).isTrue();
 		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
 		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
 		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+		// カードは使用できたはず（true）
+		// ゲームプレイヤーの倉庫に、実行した人（狩人）のIDを取ってくる
+		// その保存した記録にある名乗った役職IDと、実行した人（狩人）の役職IDは同じはず
+		// その保存した記録にある名乗った日の日付と、今のゲーム日付は同じはず
 	}
 
 	@Test
@@ -300,13 +319,140 @@ class CardPlayServiceTest {
 		cardPlayService.playCard(game, actor, card, null);
 		Integer firstDay = actor.getClaimedAtDay();
 		game.setDayNumber(game.getDayNumber() + 1);
+		// 実行をする人として占い師、名乗りカードを用意をして、実行する
+		// 初日の記録として、名乗った日の日付を取ってくる
+		// ゲーム内の日付を1日進める
 
 		boolean handled = cardPlayService.playCard(game, actor, card, null);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
 
 		assertThat(handled).isFalse();
 		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
 		assertThat(saved.getClaimedRoleId()).isEqualTo(actor.getRoleId());
 		assertThat(saved.getClaimedAtDay()).isEqualTo(firstDay);
+		// カードは使用できなかったはず（false） ※名乗りカードは1人につき1回しか使用できないため
+		// ゲームプレイヤーの倉庫に、実行した人（占い師）のIDを取ってくる
+		// その保存した記録にある名乗った役職IDと、実行した人（占い師）の役職IDは同じはず
+		// その保存した記録にある名乗った日の日付と、ゲーム初日の日付は同じはず
+	}
+
+	@Test
+	void 人狼が騙りで占い師を名乗ると指定役職と現在日が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として人狼と、占い師の役職ID、名乗りのカードを用意する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+		// ※名乗る役職は占い師の役職
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+		// カードは使用できたはず（true）
+		// ゲームプレイヤーの倉庫に、実行した人（人狼）のIDを取ってくる
+		// その保存した記録にある名乗った役職IDと、占い師の役職IDは同じはず
+		// その保存した記録にある名乗った日の日付と、今のゲーム日付は同じはず
+	}
+
+	@Test
+	void 狂人も騙りで占い師を名乗れる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "狂人");
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として狂人を用意する
+		// 名乗る役職として、占い師の役職IDを取ってくる
+		// 名乗りカードを用意する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+		// ※名乗る役職は占い師の役職
+
+		assertThat(handled).isTrue();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
+		assertThat(saved.getClaimedAtDay()).isEqualTo(game.getDayNumber());
+		// カードは使用できたはず（true）
+		// ゲームプレイヤーの倉庫に、実行した人（狂人）のIDを取ってくる
+		// その保存した記録にある名乗った役職IDと、占い師の役職IDは同じはず
+		// その保存した記録にある名乗った日の日付と、今のゲーム日付は同じはず
+	}
+
+	@Test
+	void 人狼側の役職を騙ろうとするとエラーになり記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として人狼と、名乗りカードを用意する
+
+		for (String roleName : List.of("人狼", "狂人")) {
+			Long wolfSideId = roleRepository.findByName(roleName).orElseThrow().getId();
+			// 人狼陣営の役職（人狼、狂人）を1つずつ取り出して…
+			// それぞれ役職の名前から、役職のIDを探して、用意する
+			
+			assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null, wolfSideId))
+					.isInstanceOf(IllegalArgumentException.class);
+			// その役職ID（人狼陣営の役職）で名乗るカードを使用すると、エラー（IllegalArgumentException）が出るはず
+		}
+		assertThat(actor.getClaimedRoleId()).isNull();
+		// 実行した人（人狼）の、名乗った役職IDは空である
+	}
+
+	@Test
+	void 存在しない役職を騙ろうとするとエラーになる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として人狼と、名乗りカードを用意する
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null, -1L))
+				.isInstanceOf(IllegalArgumentException.class);
+		// カードを使用して、エラー（IllegalArgumentException）が出るはず
+		// ※存在しない役職IDを指定しているため
+	}
+
+	@Test
+	void 役職指定なしで人狼が宣言するとエラーになる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		// 実行する人として人狼と、名乗りカードを用意する
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, card, null))
+				.isInstanceOf(IllegalArgumentException.class);
+		// カードを使用して、エラー（IllegalArgumentException）が出るはず
+		// ※人狼は役職を指定しなければ名乗れないため
+		
+		assertThat(actor.getClaimedRoleId()).isNull();
+		// 実行した人（人狼）の、名乗った役職IDは空である
+	}
+
+	@Test
+	void 騙り済みの2回目はfalseで内容は変わらない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		Long fortuneTellerId = roleRepository.findByName("占い師").orElseThrow().getId();
+		Long hunterId = roleRepository.findByName("狩人").orElseThrow().getId();
+		Card card = new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1);
+		cardPlayService.playCard(game, actor, card, null, fortuneTellerId);
+		// 実行する人として人狼と、名乗る役職として占い師の役職IDと、狩人の役職ID、名乗りカードを用意する
+		// 名乗る役職を占い師として、名乗りカードを使用する
+
+		boolean handled = cardPlayService.playCard(game, actor, card, null, hunterId);
+		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
+		// ※今回名乗るのは狩人の役職
+
+		assertThat(handled).isFalse();
+		GamePlayer saved = gamePlayerRepository.findById(actor.getId()).orElseThrow();
+		assertThat(saved.getClaimedRoleId()).isEqualTo(fortuneTellerId);
+		// カードは使用できなかったはず（false）
+		// ゲームプレイヤーの倉庫に、実行した人（人狼）のIDを保存する
+		// その保存した記録にある名乗った役職IDと、占い師の役職IDは同じはず
+		// ※始めに名乗った役職は占い師で、名乗りは1回のみのため
 	}
 
 	// 役職の名前で絞って探す
