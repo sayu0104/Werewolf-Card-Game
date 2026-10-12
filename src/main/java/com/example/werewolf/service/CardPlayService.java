@@ -2,10 +2,14 @@ package com.example.werewolf.service;
 
 import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
+import com.example.werewolf.entity.CardUsageLog;
+import com.example.werewolf.entity.NightAction;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.Role;
+import com.example.werewolf.repository.CardUsageLogRepository;
 import com.example.werewolf.repository.GamePlayerRepository;
+import com.example.werewolf.repository.NightActionRepository;
 import com.example.werewolf.repository.RoleRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,19 +22,25 @@ public class CardPlayService { // カード使用用のサービス
 	private final SuspicionService suspicionService;
 	private final GamePlayerRepository gamePlayerRepository;
 	private final RoleRepository roleRepository;
+	private final NightActionRepository nightActionRepository;
+	private final CardUsageLogRepository cardUsageLogRepository;
 
 	private static final String VILLAGER_FACTION = "村人陣営";
 	private static final String WEREWOLF_FACTION = "人狼陣営";
+	private static final String FORTUNE_TELLER = "占い師";
 
 	public CardPlayService(FortuneTellerService fortuneTellerService, HunterService hunterService,
 			WerewolfService werewolfService, SuspicionService suspicionService,
-			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository) {
+			GamePlayerRepository gamePlayerRepository, RoleRepository roleRepository,
+			NightActionRepository nightActionRepository, CardUsageLogRepository cardUsageLogRepository) {
 		this.fortuneTellerService = fortuneTellerService;
 		this.hunterService = hunterService;
 		this.werewolfService = werewolfService;
 		this.suspicionService = suspicionService;
 		this.gamePlayerRepository = gamePlayerRepository;
 		this.roleRepository = roleRepository;
+		this.nightActionRepository = nightActionRepository;
+		this.cardUsageLogRepository = cardUsageLogRepository;
 	}
 
 	// カードを使用したか、true または false　で返す
@@ -132,7 +142,40 @@ public class CardPlayService { // カード使用用のサービス
 			
 		// 「報告」のカードの場合
 		case CardEffectType.REPORT:
-			return false;
+			if (actor.getClaimedRoleId() == null) {
+				return false;
+				// もし、名乗った役職が空＝まだ名乗ってないなら false で中止
+			}
+			Role reporterRole = roleRepository.findById(actor.getRoleId())
+					.orElseThrow(() -> new IllegalArgumentException("使用者の役職が存在しない"));
+			// 使用者の本当の役職を取ってきて、見つからなければエラー
+			
+			if (!VILLAGER_FACTION.equals(reporterRole.getFaction())
+					|| !FORTUNE_TELLER.equals(reporterRole.getName())) {
+				return false;
+				// 村人陣営じゃない、または占い師じゃないなら、 false で中止
+				// ※通れるのは、村人陣営 かつ 占い師
+			}
+			NightAction divination = nightActionRepository
+					.findFirstByGameIdAndActorGamePlayerIdAndActionTypeAndDayNumber(game.getId(), actor.getId(),
+							"占い", game.getDayNumber())
+					.orElse(null);
+			// このゲームで・この使用者が・『占い』という行動を・この日付にした記録を、1件探してくる。無ければ null。
+			
+			if (divination == null || divination.getIsWerewolf() == null) {
+				return false;
+				// 記録が無い、または 占い結果（白黒）がまだ入ってないなら、false で中止
+			}
+			CardUsageLog reportLog = new CardUsageLog(game.getId(), game.getDayNumber(), "昼", actor.getId(),
+					card.getId());
+			reportLog.setTargetGamePlayerId(divination.getTargetGamePlayerId());
+			reportLog.setDeclaredResult(divination.getIsWerewolf() ? "黒" : "白");
+			cardUsageLogRepository.save(reportLog);
+			return true;
+			// 報告の記録を新しく作る（ゲーム・日付・昼・使用者・カードを入れる）
+			// 占った相手を対象にセット
+			// 占い結果が人狼なら"黒"、違えば"白"をセット
+			// 記録を保存して、true（報告できた）を返す
 			
 		// 「防御」のカードの場合
 		case CardEffectType.DEFENSE:
