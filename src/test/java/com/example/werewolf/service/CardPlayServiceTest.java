@@ -260,11 +260,11 @@ class CardPlayServiceTest {
 	}
 
 	@Test
-	void 未実装の種類のカードでも落ちずに何も起きない() {
+	void 未対応のeffect_typeでも落ちずにfalseを返す() {
 		Game game = gameStartService.startGame();
 		GamePlayer actor = findByRoleName(game, "占い師");
 		GamePlayer target = findByRoleName(game, "村人");
-		Card card = new Card("報告カード", CardEffectType.REPORT, "昼", 1);
+		Card card = new Card("なぞカード", "存在しない効果", "昼", 1);
 		// 実行する人として占い師、その対象先として村人、報告カードを用意する
 
 		boolean handled = cardPlayService.playCard(game, actor, card, target);
