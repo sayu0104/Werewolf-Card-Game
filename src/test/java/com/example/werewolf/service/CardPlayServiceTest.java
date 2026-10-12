@@ -5,10 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.werewolf.entity.Card;
 import com.example.werewolf.entity.CardEffectType;
+import com.example.werewolf.entity.CardUsageLog;
 import com.example.werewolf.entity.Game;
 import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.NightAction;
 import com.example.werewolf.entity.SuspicionPoint;
+import com.example.werewolf.repository.CardRepository;
+import com.example.werewolf.repository.CardUsageLogRepository;
 import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.NightActionRepository;
 import com.example.werewolf.repository.RoleRepository;
@@ -40,6 +43,12 @@ class CardPlayServiceTest {
 
 	@Autowired
 	private SuspicionPointRepository suspicionPointRepository;
+
+	@Autowired
+	private CardRepository cardRepository;
+
+	@Autowired
+	private CardUsageLogRepository cardUsageLogRepository;
 
 	@Test
 	void 情報取得のカードで人狼を占うと黒の記録が作られる() {
@@ -453,6 +462,83 @@ class CardPlayServiceTest {
 		// ゲームプレイヤーの倉庫に、実行した人（人狼）のIDを保存する
 		// その保存した記録にある名乗った役職IDと、占い師の役職IDは同じはず
 		// ※始めに名乗った役職は占い師で、名乗りは1回のみのため
+	}
+
+	@Test
+	void 占い師が人狼を占った後に結果報告すると黒が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer target = findByRoleName(game, "人狼");
+		Card divine = new Card("占いカード", CardEffectType.INFORMATION, "昼", 1);
+		Card report = findRealCard("結果報告");
+		cardPlayService.playCard(game, actor, divine, target);
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+
+		boolean handled = cardPlayService.playCard(game, actor, report, null);
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("黒");
+		assertThat(logs.get(0).getTargetGamePlayerId()).isEqualTo(target.getId());
+		assertThat(logs.get(0).getGamePlayerId()).isEqualTo(actor.getId());
+		assertThat(logs.get(0).getCardId()).isEqualTo(report.getId());
+		assertThat(logs.get(0).getPhase()).isEqualTo("昼");
+		assertThat(logs.get(0).getDayNumber()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 占い師が村人を占った後に結果報告すると白が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card divine = new Card("占いカード", CardEffectType.INFORMATION, "昼", 1);
+		Card report = findRealCard("結果報告");
+		cardPlayService.playCard(game, actor, divine, target);
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+
+		boolean handled = cardPlayService.playCard(game, actor, report, null);
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("白");
+		assertThat(logs.get(0).getTargetGamePlayerId()).isEqualTo(target.getId());
+	}
+
+	@Test
+	void 名乗っていない占い師が結果報告するとfalseで記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer target = findByRoleName(game, "人狼");
+		Card divine = new Card("占いカード", CardEffectType.INFORMATION, "昼", 1);
+		Card report = findRealCard("結果報告");
+		cardPlayService.playCard(game, actor, divine, target);
+
+		boolean handled = cardPlayService.playCard(game, actor, report, null);
+
+		assertThat(handled).isFalse();
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void その日に占っていない占い師が結果報告するとfalseで記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		Card report = findRealCard("結果報告");
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+
+		boolean handled = cardPlayService.playCard(game, actor, report, null);
+
+		assertThat(handled).isFalse();
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	private Card findRealCard(String name) {
+		return cardRepository.findAll().stream()
+				.filter(card -> name.equals(card.getName()))
+				.findFirst()
+				.orElseThrow();
 	}
 
 	// 役職の名前で絞って探す
