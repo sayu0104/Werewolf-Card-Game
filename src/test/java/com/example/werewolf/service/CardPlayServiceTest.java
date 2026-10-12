@@ -265,7 +265,7 @@ class CardPlayServiceTest {
 		GamePlayer actor = findByRoleName(game, "占い師");
 		GamePlayer target = findByRoleName(game, "村人");
 		Card card = new Card("なぞカード", "存在しない効果", "昼", 1);
-		// 実行する人として占い師、その対象先として村人、報告カードを用意する
+		// 実行する人として占い師、その対象先として村人、なぞカード（未対応の種類）を用意する
 
 		boolean handled = cardPlayService.playCard(game, actor, card, target);
 		// カードを使用して、その結果をカードが使えた(true)か・使えなかった(false)か
