@@ -51,6 +51,11 @@ public class CardPlayService { // カード使用用のサービス
 	}
 
 	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId) {
+		return playCard(game, actor, card, target, declaredRoleId, null);
+	}
+
+	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId,
+			String declaredResult) {
 		// null＝村側 / 役職ID＝狼側
 		
 		if (game == null) {
@@ -150,6 +155,26 @@ public class CardPlayService { // カード使用用のサービス
 					.orElseThrow(() -> new IllegalArgumentException("使用者の役職が存在しない"));
 			// 使用者の本当の役職を取ってきて、見つからなければエラー
 			
+			if (WEREWOLF_FACTION.equals(reporterRole.getFaction())) {
+				Role claimedRole = roleRepository.findById(actor.getClaimedRoleId())
+						.orElseThrow(() -> new IllegalArgumentException("名乗った役職が存在しない"));
+				if (!FORTUNE_TELLER.equals(claimedRole.getName())) {
+					return false;
+				}
+				boolean isDivined = "白".equals(declaredResult) || "黒".equals(declaredResult);
+				if (!isDivined && !"占えなかった".equals(declaredResult)) {
+					throw new IllegalArgumentException("偽報告の結果は白・黒・占えなかったのいずれか");
+				}
+				if (isDivined && target == null) {
+					throw new IllegalArgumentException("白・黒の偽報告には対象が必須");
+				}
+				CardUsageLog fakeLog = new CardUsageLog(game.getId(), game.getDayNumber(), "昼", actor.getId(),
+						card.getId());
+				fakeLog.setTargetGamePlayerId(isDivined ? target.getId() : null);
+				fakeLog.setDeclaredResult(declaredResult);
+				cardUsageLogRepository.save(fakeLog);
+				return true;
+			}
 			if (!VILLAGER_FACTION.equals(reporterRole.getFaction())
 					|| !FORTUNE_TELLER.equals(reporterRole.getName())) {
 				return false;
