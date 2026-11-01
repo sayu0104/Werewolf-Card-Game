@@ -51,6 +51,11 @@ public class CardPlayService { // カード使用用のサービス
 	}
 
 	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId) {
+		return playCard(game, actor, card, target, declaredRoleId, null);
+	}
+
+	public boolean playCard(Game game, GamePlayer actor, Card card, GamePlayer target, Long declaredRoleId,
+			String declaredResult) {
 		// null＝村側 / 役職ID＝狼側
 		
 		if (game == null) {
@@ -150,6 +155,43 @@ public class CardPlayService { // カード使用用のサービス
 					.orElseThrow(() -> new IllegalArgumentException("使用者の役職が存在しない"));
 			// 使用者の本当の役職を取ってきて、見つからなければエラー
 			
+			if (WEREWOLF_FACTION.equals(reporterRole.getFaction())) {
+				Role claimedRole = roleRepository.findById(actor.getClaimedRoleId())
+						.orElseThrow(() -> new IllegalArgumentException("名乗った役職が存在しない"));
+				// もし、人狼陣営と、使用者の本当の役職の陣営が同じなら
+				// 名乗った（騙った）役職を探してきて、なければエラー
+				
+				if (!FORTUNE_TELLER.equals(claimedRole.getName())) {
+					return false;
+					// もし、名乗った役職が占い師じゃないなら false で中止
+				}
+				boolean isDivined = "白".equals(declaredResult) || "黒".equals(declaredResult);
+				// 占い（騙り）の結果が "白" または "黒" なら true、それ以外なら false
+				
+				if (!isDivined && !"占えなかった".equals(declaredResult)) {
+					throw new IllegalArgumentException("偽報告の結果は白・黒・占えなかったのいずれか");
+					// もし、占い（騙り）の結果（isDivined）がfalse（白でも黒でもない）、かつ、占えなかったでもないなら
+					// エラーを出す
+					// ※許されてる3つ（白/黒/占えなかった）以外の変な値が来たら弾く
+				}
+				if (isDivined && target == null) {
+					throw new IllegalArgumentException("白・黒の偽報告には対象が必須");
+					// もし、白か黒を宣言してて、かつ、占い先が空なら、
+					// エラーを出す
+				}
+				CardUsageLog fakeLog = new CardUsageLog(game.getId(), game.getDayNumber(), "昼", actor.getId(),
+						card.getId());
+				// 偽の占い結果の記録を作る
+				
+				fakeLog.setTargetGamePlayerId(isDivined ? target.getId() : null);
+				fakeLog.setDeclaredResult(declaredResult);
+				// 占い（騙り）をしたか？ 白・黒なら占い先をセット、占えなかったなら占い先はなし
+				// 占い（騙り）の結果(白/黒/占えなかった)をセット
+				
+				cardUsageLogRepository.save(fakeLog);
+				return true;
+				// この偽の占い結果を保存して、true（報告できた結果）を返す
+			}
 			if (!VILLAGER_FACTION.equals(reporterRole.getFaction())
 					|| !FORTUNE_TELLER.equals(reporterRole.getName())) {
 				return false;

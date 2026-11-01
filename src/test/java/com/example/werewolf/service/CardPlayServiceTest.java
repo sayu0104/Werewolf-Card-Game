@@ -534,6 +534,114 @@ class CardPlayServiceTest {
 		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
 	}
 
+	private GamePlayer claimAs(Game game, String actorRoleName, String claimedRoleName) {
+		GamePlayer actor = findByRoleName(game, actorRoleName);
+		Long claimedId = roleRepository.findByName(claimedRoleName).orElseThrow().getId();
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null,
+				claimedId);
+		return actor;
+	}
+
+	@Test
+	void 人狼が占い師を騙って偽報告で黒を宣言すると記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "人狼", "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card report = findRealCard("偽報告");
+
+		boolean handled = cardPlayService.playCard(game, actor, report, target, null, "黒");
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("黒");
+		assertThat(logs.get(0).getTargetGamePlayerId()).isEqualTo(target.getId());
+		assertThat(logs.get(0).getGamePlayerId()).isEqualTo(actor.getId());
+		assertThat(logs.get(0).getCardId()).isEqualTo(report.getId());
+		assertThat(logs.get(0).getPhase()).isEqualTo("昼");
+		assertThat(logs.get(0).getDayNumber()).isEqualTo(game.getDayNumber());
+	}
+
+	@Test
+	void 狂人も占い師を騙って偽報告できる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "狂人", "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+
+		boolean handled = cardPlayService.playCard(game, actor, findRealCard("偽報告"), target, null, "白");
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("白");
+		assertThat(logs.get(0).getTargetGamePlayerId()).isEqualTo(target.getId());
+	}
+
+	@Test
+	void 占えなかったを選ぶと対象なしで記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "人狼", "占い師");
+
+		boolean handled = cardPlayService.playCard(game, actor, findRealCard("偽報告"), null, null, "占えなかった");
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("占えなかった");
+		assertThat(logs.get(0).getTargetGamePlayerId()).isNull();
+	}
+
+	@Test
+	void 白黒の偽報告で対象がnullだとエラーになり記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "人狼", "占い師");
+		Card report = findRealCard("偽報告");
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, report, null, null, "白"))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, report, null, null, "黒"))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 白黒占えなかった以外の偽報告はエラーになり記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "人狼", "占い師");
+		GamePlayer target = findByRoleName(game, "村人");
+		Card report = findRealCard("偽報告");
+
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, report, target, null, "灰"))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> cardPlayService.playCard(game, actor, report, target, null, null))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 名乗っていない人狼の偽報告はfalseで記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "人狼");
+		GamePlayer target = findByRoleName(game, "村人");
+
+		boolean handled = cardPlayService.playCard(game, actor, findRealCard("偽報告"), target, null, "黒");
+
+		assertThat(handled).isFalse();
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 狩人を騙った人狼の偽報告はfalseで記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = claimAs(game, "人狼", "狩人");
+		GamePlayer target = findByRoleName(game, "村人");
+
+		boolean handled = cardPlayService.playCard(game, actor, findRealCard("偽報告"), target, null, "黒");
+
+		assertThat(handled).isFalse();
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
 	private Card findRealCard(String name) {
 		return cardRepository.findAll().stream()
 				.filter(card -> name.equals(card.getName()))
