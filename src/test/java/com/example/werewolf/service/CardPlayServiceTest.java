@@ -50,6 +50,9 @@ class CardPlayServiceTest {
 	@Autowired
 	private CardUsageLogRepository cardUsageLogRepository;
 
+	@Autowired
+	private ReportService reportService;
+
 	@Test
 	void 情報取得のカードで人狼を占うと黒の記録が作られる() {
 		Game game = gameStartService.startGame();
@@ -531,6 +534,78 @@ class CardPlayServiceTest {
 		boolean handled = cardPlayService.playCard(game, actor, report, null);
 
 		assertThat(handled).isFalse();
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 占い師が過去に占った日ぶんは名乗ると遡って報告が記録される() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer wolf = findByRoleName(game, "人狼");
+		GamePlayer villager = findByRoleName(game, "村人");
+		Card divine = new Card("占いカード", CardEffectType.INFORMATION, "昼", 1);
+		game.setDayNumber(1);
+		cardPlayService.playCard(game, actor, divine, wolf);
+		game.setDayNumber(2);
+		cardPlayService.playCard(game, actor, divine, villager);
+		game.setDayNumber(3);
+
+		boolean handled = cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1),
+				null);
+
+		assertThat(handled).isTrue();
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(2);
+		CardUsageLog day1 = logs.stream().filter(log -> log.getDayNumber() == 1).findFirst().orElseThrow();
+		CardUsageLog day2 = logs.stream().filter(log -> log.getDayNumber() == 2).findFirst().orElseThrow();
+		assertThat(day1.getDeclaredResult()).isEqualTo("黒");
+		assertThat(day1.getTargetGamePlayerId()).isEqualTo(wolf.getId());
+		assertThat(day2.getDeclaredResult()).isEqualTo("白");
+		assertThat(day2.getTargetGamePlayerId()).isEqualTo(villager.getId());
+		assertThat(day1.getCardId()).isEqualTo(findRealCard("結果報告").getId());
+		assertThat(day1.getPhase()).isEqualTo("昼");
+	}
+
+	@Test
+	void 占っていない日は遡り報告がスキップされる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer wolf = findByRoleName(game, "人狼");
+		game.setDayNumber(2);
+		cardPlayService.playCard(game, actor, new Card("占いカード", CardEffectType.INFORMATION, "昼", 1), wolf);
+		game.setDayNumber(3);
+
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDayNumber()).isEqualTo(2);
+	}
+
+	@Test
+	void 報告済みの日は遡り報告で二重に記録されない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		GamePlayer wolf = findByRoleName(game, "人狼");
+		game.setDayNumber(1);
+		cardPlayService.playCard(game, actor, new Card("占いカード", CardEffectType.INFORMATION, "昼", 1), wolf);
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+		game.setDayNumber(3);
+
+		reportService.backfillPastReports(game, actor);
+		reportService.backfillPastReports(game, actor);
+
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).hasSize(1);
+	}
+
+	@Test
+	void 狩人が名乗っても遡り報告は作られない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "狩人");
+		game.setDayNumber(3);
+
+		cardPlayService.playCard(game, actor, new Card("名乗りカード", CardEffectType.DECLARATION, "昼", 1), null);
+
 		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
 	}
 
