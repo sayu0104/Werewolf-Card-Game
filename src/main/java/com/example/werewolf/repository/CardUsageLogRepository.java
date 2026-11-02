@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CardUsageLogRepository extends JpaRepository<CardUsageLog, Long> {
 	List<CardUsageLog> findByGameId(Long gameId);
+	boolean existsByGameIdAndGamePlayerIdAndDayNumber(Long gameId, Long gamePlayerId, Integer dayNumber);
 }
