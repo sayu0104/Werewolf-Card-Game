@@ -9,13 +9,15 @@ import org.springframework.stereotype.Service;
 public class PhaseService {
 
 	private final GameRepository gameRepository;
+	private final ReportService reportService;
 	// GameRepository gameRepository …　型（種類・設計図の名前） 名前（この箱の呼び名）
 	// ↑ この「GameRepository型の箱」を、この係の手元に持っておく宣言
 	// （中身は、コンストラクタでDIで受け取った"倉庫番"が入る）
 
 	//                          ↓ゲームの倉庫番（道具）
-	public PhaseService(GameRepository gameRepository) {
+	public PhaseService(GameRepository gameRepository, ReportService reportService) {
 		this.gameRepository = gameRepository;
+		this.reportService = reportService;
 	}
 
 	public Game advancePhase(Game game) { // フェーズを進める
@@ -33,7 +35,10 @@ public class PhaseService {
 		// switch … 「今の値によって、行き先を振り分ける」
 		
 		// case … 今のフェーズが…
-			case MORNING -> game.setCurrentPhase(Phase.DAY);
+			case MORNING -> {
+				game.setCurrentPhase(Phase.DAY);
+				reportService.recordAutoReports(game);
+			}
 			// MORNING（朝なら） → 昼（DAY）にする
 			
 			case DAY -> {
