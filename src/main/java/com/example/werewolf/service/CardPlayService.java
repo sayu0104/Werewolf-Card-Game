@@ -139,10 +139,12 @@ public class CardPlayService { // カード使用用のサービス
 			}
 			actor.setClaimedAtDay(game.getDayNumber());
 			gamePlayerRepository.save(actor);
+			// 役職を宣言した（名乗った）時に、名乗った日の日付を記録
+			
 			if (VILLAGER_FACTION.equals(actorRole.getFaction())) {
 				reportService.backfillPastReports(game, actor);
+				// もし、村人陣営なら、1日目から今日まで全部の報告をまとめて作る
 			}
-			// 役職を宣言した（名乗った）時に、名乗った役職と、その名乗った日付を記録
 			
 			return true;
 			
@@ -200,6 +202,7 @@ public class CardPlayService { // カード使用用のサービス
 				// ※通れるのは、村人陣営 かつ 占い師
 			}
 			return reportService.recordVillageReport(game, actor, game.getDayNumber());
+			// 1日分（今日ぶん）の報告を作って、その結果(true/false)を返す
 
 		// 「防御」のカードの場合
 		case CardEffectType.DEFENSE:
