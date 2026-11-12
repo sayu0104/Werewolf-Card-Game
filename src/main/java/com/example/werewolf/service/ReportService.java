@@ -8,6 +8,7 @@ import com.example.werewolf.entity.NightAction;
 import com.example.werewolf.entity.Role;
 import com.example.werewolf.repository.CardRepository;
 import com.example.werewolf.repository.CardUsageLogRepository;
+import com.example.werewolf.repository.GamePlayerRepository;
 import com.example.werewolf.repository.NightActionRepository;
 import com.example.werewolf.repository.RoleRepository;
 import org.springframework.stereotype.Service;
@@ -19,17 +20,20 @@ public class ReportService { // 報告（占い結果を card_usage_logs に記�
 	private final CardUsageLogRepository cardUsageLogRepository;
 	private final NightActionRepository nightActionRepository;
 	private final RoleRepository roleRepository;
+	private final GamePlayerRepository gamePlayerRepository;
 
 	private static final String VILLAGER_FACTION = "村人陣営";
 	private static final String FORTUNE_TELLER = "占い師";
 	private static final String REPORT_CARD_NAME = "結果報告";
 
 	public ReportService(CardRepository cardRepository, CardUsageLogRepository cardUsageLogRepository,
-			NightActionRepository nightActionRepository, RoleRepository roleRepository) {
+			NightActionRepository nightActionRepository, RoleRepository roleRepository,
+			GamePlayerRepository gamePlayerRepository) {
 		this.cardRepository = cardRepository;
 		this.cardUsageLogRepository = cardUsageLogRepository;
 		this.nightActionRepository = nightActionRepository;
 		this.roleRepository = roleRepository;
+		this.gamePlayerRepository = gamePlayerRepository;
 	}
 
 	// 本物の占い師の1日分の報告を１件作る
@@ -82,6 +86,23 @@ public class ReportService { // 報告（占い結果を card_usage_logs に記�
 			recordVillageReport(game, player, day);
 			// 今の試合まで何日あるかを1日目から数える
 			// その日数分、1日ぶんの報告を作る（既にある日は中でスキップ）
+		}
+	}
+
+	// 名乗り済みの全プレイヤーぶん、自動で報告を作る（村側占い師だけ中で実際に作る）
+	public void recordAutoReports(Game game) {
+		if (game == null) {
+			throw new IllegalArgumentException("試合は必須");
+			// もし、試合が空なら、エラー
+		}
+		for (GamePlayer player : gamePlayerRepository.findByGameId(game.getId())) {
+			// その試合から、プレイヤーを1人ずつ探し出して、
+			
+			if (player.getClaimedRoleId() != null) {
+				backfillPastReports(game, player);
+				// もし、プレイヤーが名乗っているなら…
+				// 1日目〜今日ぶんの報告をまとめて作る
+			}
 		}
 	}
 

@@ -2,8 +2,16 @@ package com.example.werewolf.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.werewolf.entity.Card;
+import com.example.werewolf.entity.CardEffectType;
+import com.example.werewolf.entity.CardUsageLog;
 import com.example.werewolf.entity.Game;
+import com.example.werewolf.entity.GamePlayer;
 import com.example.werewolf.entity.Phase;
+import com.example.werewolf.repository.CardUsageLogRepository;
+import com.example.werewolf.repository.GamePlayerRepository;
+import com.example.werewolf.repository.RoleRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +30,18 @@ class PhaseServiceTest { // フェーズの動き方のテスト
 
 	@Autowired
 	private GameStartService gameStartService;
+
+	@Autowired
+	private CardPlayService cardPlayService;
+
+	@Autowired
+	private GamePlayerRepository gamePlayerRepository;
+
+	@Autowired
+	private RoleRepository roleRepository;
+
+	@Autowired
+	private CardUsageLogRepository cardUsageLogRepository;
 
 	@Test // 「これは1つのテストだよ」という目印
 	void 朝の次は昼になる() {
@@ -168,5 +188,78 @@ class PhaseServiceTest { // フェーズの動き方のテスト
 
 		assertThat(game.getCurrentPhase()).isEqualTo(Phase.DAY);
 		// 結果：試合開始直後（１日目）のフェーズは、昼のはず
+	}
+
+	private GamePlayer findByRoleName(Game game, String roleName) {
+		return gamePlayerRepository.findByGameId(game.getId()).stream()
+				.filter(player -> roleName.equals(roleRepository.findById(player.getRoleId()).orElseThrow().getName()))
+				.findFirst()
+				.orElseThrow();
+	}
+
+	private void claimWithoutBackfill(GamePlayer player) {
+		player.setClaimedRoleId(player.getRoleId());
+		gamePlayerRepository.save(player);
+	}
+
+	private void divineOnDay1ThenMoveToMorningOfDay2(Game game, GamePlayer actor, GamePlayer target) {
+		game.setDayNumber(1);
+		cardPlayService.playCard(game, actor, new Card("占いカード", CardEffectType.INFORMATION, "昼", 1), target);
+		game.setDayNumber(2);
+		game.setCurrentPhase(Phase.MORNING);
+	}
+
+	@Test
+	void 朝から昼に進むと名乗り済みの村側占い師の報告が作られる() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		divineOnDay1ThenMoveToMorningOfDay2(game, actor, findByRoleName(game, "人狼"));
+		claimWithoutBackfill(actor);
+
+		phaseService.advancePhase(game);
+
+		List<CardUsageLog> logs = cardUsageLogRepository.findByGameId(game.getId());
+		assertThat(logs).hasSize(1);
+		assertThat(logs.get(0).getDayNumber()).isEqualTo(1);
+		assertThat(logs.get(0).getDeclaredResult()).isEqualTo("黒");
+		assertThat(logs.get(0).getPhase()).isEqualTo("昼");
+	}
+
+	@Test
+	void 名乗っていない占い師には朝から昼に進んでも報告が作られない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		divineOnDay1ThenMoveToMorningOfDay2(game, actor, findByRoleName(game, "人狼"));
+
+		phaseService.advancePhase(game);
+
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 名乗った狩人と村人には朝から昼に進んでも報告が作られない() {
+		Game game = gameStartService.startGame();
+		claimWithoutBackfill(findByRoleName(game, "狩人"));
+		claimWithoutBackfill(findByRoleName(game, "村人"));
+		game.setDayNumber(2);
+		game.setCurrentPhase(Phase.MORNING);
+
+		phaseService.advancePhase(game);
+
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).isEmpty();
+	}
+
+	@Test
+	void 朝から昼への進行を繰り返しても同じ日の報告は二重に作られない() {
+		Game game = gameStartService.startGame();
+		GamePlayer actor = findByRoleName(game, "占い師");
+		divineOnDay1ThenMoveToMorningOfDay2(game, actor, findByRoleName(game, "人狼"));
+		claimWithoutBackfill(actor);
+
+		phaseService.advancePhase(game);
+		game.setCurrentPhase(Phase.MORNING);
+		phaseService.advancePhase(game);
+
+		assertThat(cardUsageLogRepository.findByGameId(game.getId())).hasSize(1);
 	}
 }
