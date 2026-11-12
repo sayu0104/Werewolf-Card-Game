@@ -40,6 +40,7 @@ public class PhaseService {
 				reportService.recordAutoReports(game);
 			}
 			// MORNING（朝なら） → 昼（DAY）にする
+			// 名乗ったプレイヤーの自動報告をする
 			
 			case DAY -> {
 				if (game.getDayNumber() == 1) {
