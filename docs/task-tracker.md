@@ -78,7 +78,7 @@ MVP（最小限の完成形）までのロードマップ。1行＝1Issue。完�
     - [x] ✅ #173 6-3 結果報告（村側・占い師の白黒）：名乗り済み前提、使用者が村側の占い師なら、その日の自分の占い結果(night_actions)を card_usage_logs に記録（declared_result="黒"/"白"、対象・日付も）。CardUsageLogRepository新規、NightActionRepositoryに1件取得メソッド追加。偽報告(狼)・毎ターン/過去日遡り・狩人は後続（PR #174）
     - [x] ✅ #176 6-4 偽報告（狼側・占い師を騙った嘘の白黒）：本当は人狼陣営で占い師を騙ってる人が、対象＋"白"/"黒"/"占えなかった"を自分で選んで card_usage_logs に記録（night_actionsは見ない＝嘘を記録できる）。結果は playCard の6引数版(declaredResult)で受け取る。白黒なら対象必須・不正値はエラー。REPORT枝に人狼側分岐を追加（村側6-3はそのまま）（PR #177）
     - [x] ✅ #179 6-5a 過去日遡り（村側）：占い師が後から名乗ったら、1日目〜今日ぶんの結果報告を遡って生成。報告処理をReportServiceに新設（recordVillageReport=1日ぶん／backfillPastReports=過去日ループ／isVillageFortuneTeller=村側占い師判定）。existsByで二重記録防止、結果報告カードはfindFirstByNameで取得。CardPlayServiceのDECLARATION枝（村人陣営なら呼ぶ）・REPORT枝（村側占い師の今日ぶん）から呼び出し（PR #180）
-    - [ ] ⬜ 6-5a-2 毎ターン強制（村側）：一度名乗った占い師は毎ターン自動で報告（PhaseServiceのDAY遷移にフック）
+    - [x] ✅ 6-5a-2 毎ターン強制（村側）：名乗り済み村側占い師が朝→昼で毎ターン自動報告。ReportServiceにrecordAutoReports追加（名乗り済み全員にbackfill→中で村側占い師だけ実際作る）＋PhaseServiceの朝→昼にフック。existsByで二重記録防止。テスト4件追加（PhaseServiceTest）（PR #182）
     - [ ] ⬜ 6-5b 偽報告の毎ターン/過去日遡り（狼側）：本人が中身（対象＋白/黒/占えなかった）を選ぶ＝UI・入力が要るのでプレイ画面実装時に
   - [ ] ⬜ 手札・配布システム（GamePlayerHand/CardUsageLogのリポジトリ、山札からカードを配る・手札に持たせる・使用を記録する。プレイ画面の前提。時期は後で）
 - [ ] ⬜ #66 被疑心ポイント（⚠️設計待ち）… A（カード使用制限）・B（強制イベント）のトリガー
