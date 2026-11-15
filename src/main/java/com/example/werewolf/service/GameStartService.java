@@ -23,9 +23,13 @@ public class GameStartService { // ゲームの試合開始処理クラス
 	// （中身は、コンストラクタでDIで受け取った"倉庫番"が入る）
 
 	//                          ↓ゲームの倉庫番（道具）       　　　　　　↓役職を割り振りする道具
-	public GameStartService(GameRepository gameRepository, RoleAssignmentService roleAssignmentService) {
+	private final HandService handService;
+
+	public GameStartService(GameRepository gameRepository, RoleAssignmentService roleAssignmentService,
+			HandService handService) {
 		this.gameRepository = gameRepository;
 		this.roleAssignmentService = roleAssignmentService;
+		this.handService = handService;
 	}
 
 	public Game startGame() {
@@ -74,6 +78,8 @@ public class GameStartService { // ゲームの試合開始処理クラス
 		// (players) … forで作った6人に配る
 		
 		// ※assignRolesは中で保存まで済ませるので、戻り値は受け取らず呼ぶだけでよい
+
+		handService.dealGuaranteedCards(game);
 
 		return game;
 		// 出来上がった Game（id入り・進行中）を、呼んだ相手に返す

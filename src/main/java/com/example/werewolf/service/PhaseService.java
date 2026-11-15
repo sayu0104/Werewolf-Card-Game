@@ -15,9 +15,12 @@ public class PhaseService {
 	// （中身は、コンストラクタでDIで受け取った"倉庫番"が入る）
 
 	//                          ↓ゲームの倉庫番（道具）
-	public PhaseService(GameRepository gameRepository, ReportService reportService) {
+	private final HandService handService;
+
+	public PhaseService(GameRepository gameRepository, ReportService reportService, HandService handService) {
 		this.gameRepository = gameRepository;
 		this.reportService = reportService;
+		this.handService = handService;
 	}
 
 	public Game advancePhase(Game game) { // フェーズを進める
@@ -38,6 +41,7 @@ public class PhaseService {
 			case MORNING -> {
 				game.setCurrentPhase(Phase.DAY);
 				reportService.recordAutoReports(game);
+					handService.dealGuaranteedCards(game);
 			}
 			// MORNING（朝なら） → 昼（DAY）にする
 			// 名乗ったプレイヤーの自動報告をする
