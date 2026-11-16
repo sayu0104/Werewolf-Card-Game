@@ -80,7 +80,11 @@ MVP（最小限の完成形）までのロードマップ。1行＝1Issue。完�
     - [x] ✅ #179 6-5a 過去日遡り（村側）：占い師が後から名乗ったら、1日目〜今日ぶんの結果報告を遡って生成。報告処理をReportServiceに新設（recordVillageReport=1日ぶん／backfillPastReports=過去日ループ／isVillageFortuneTeller=村側占い師判定）。existsByで二重記録防止、結果報告カードはfindFirstByNameで取得。CardPlayServiceのDECLARATION枝（村人陣営なら呼ぶ）・REPORT枝（村側占い師の今日ぶん）から呼び出し（PR #180）
     - [x] ✅ 6-5a-2 毎ターン強制（村側）：名乗り済み村側占い師が朝→昼で毎ターン自動報告。ReportServiceにrecordAutoReports追加（名乗り済み全員にbackfill→中で村側占い師だけ実際作る）＋PhaseServiceの朝→昼にフック。existsByで二重記録防止。テスト4件追加（PhaseServiceTest）（PR #182）
     - [ ] ⬜ 6-5b 偽報告の毎ターン/過去日遡り（狼側）：本人が中身（対象＋白/黒/占えなかった）を選ぶ＝UI・入力が要るのでプレイ画面実装時に
-  - [ ] ⬜ 手札・配布システム（GamePlayerHand/CardUsageLogのリポジトリ、山札からカードを配る・手札に持たせる・使用を記録する。プレイ画面の前提。時期は後で）
+  - [ ] 🔨 手札・配布システム（カードを 山札→手札→使用→捨て札 で回す土台。status〈in_deck/in_hand/used/discarded/held〉で置き場を管理。プレイ画面の前提）※①〜に小分け
+    - [x] ✅ ① 保証枠カードの配布（role_guaranteed_cards 対応表＋HandService.dealGuaranteedCards。役職ごとの保証枠を毎ターン in_hand に用意、existsBy で二重配布防止。ゲーム開始＋朝→昼フックから配布。山札は通さない）（PR #184）
+    - [ ] ⬜ ② 山札づくり＋ドロー（基本カード＝疑う/擁護。status に in_deck 追加、ゲーム開始で各自の山札を生成、毎ターン一定枚数をランダムに in_hand へ）
+    - [ ] ⬜ ③ 使用→捨て札→シャッフル（使用で in_hand→used、ターン終わりに discarded、山札が尽きたら discarded→in_deck で再利用）
+    - [ ] ⬜ ④ held（発動待ち）運用（カウンター/追跡などを status=held で場に固定し、山札/手札/捨て札のローテーションから除外。該当カード実装時）
 - [ ] ⬜ #66 被疑心ポイント（⚠️設計待ち）… A（カード使用制限）・B（強制イベント）のトリガー
 
 ## フェーズ4：疑似プレイヤー（AI不使用）
