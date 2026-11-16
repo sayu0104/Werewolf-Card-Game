@@ -24,6 +24,7 @@
 | game_players | ゲームに参加するプレイヤー（人間 or 疑似プレイヤー） |
 | cards | カードマスタ |
 | game_player_hands | プレイヤーの手札状態 |
+| role_guaranteed_cards | 役職ごとの保証枠カード（毎ターン手札に用意するカード）の対応表 |
 | card_usage_logs | カード使用履歴 |
 | night_actions | 夜フェーズの行動（襲撃・護衛・占い） |
 | votes | 投票履歴 |
@@ -127,6 +128,15 @@
 | card_id | INT | FK -> cards.id, NOT NULL | |
 | status | VARCHAR(20) | NOT NULL | in_hand / used / discarded / held（希少カードの保留状態） |
 | acquired_at_day | INT | NOT NULL | 何日目に手札に加わったか |
+
+### 3.8.1 role_guaranteed_cards（役職→保証枠カードの対応表）
+| カラム名 | 型 | 制約 | 説明 |
+|---|---|---|---|
+| id | INT | PK, AUTO_INCREMENT | |
+| role_id | INT | FK -> roles.id, NOT NULL | |
+| card_id | INT | FK -> cards.id, NOT NULL | |
+
+> どの役職がどの保証枠を持つかは `cards.required_role_id` では表せない（共有カードはNULL）ため、この表でデータとして持つ。保証枠は毎ターン手札（in_hand）に用意する。カウンター（is_rare=true）は保証枠に含めない。
 
 ### 3.9 card_usage_logs（カード使用履歴）
 | カラム名 | 型 | 制約 | 説明 |

@@ -36,3 +36,27 @@ FROM (
 ) v
 -- 同じ名前のカードが既にあれば入れない（二重挿入防止）
 WHERE NOT EXISTS (SELECT 1 FROM cards c WHERE c.name = v.name);
+
+-- 役職ごとの保証枠カード（毎ターン手札に用意する分）を投入
+INSERT INTO role_guaranteed_cards (role_id, card_id)
+SELECT r.id, c.id
+FROM (
+    SELECT '占い師' AS role_name, '占い' AS card_name
+    UNION ALL SELECT '占い師', '名乗り'
+    UNION ALL SELECT '占い師', '結果報告'
+    UNION ALL SELECT '狩人', '護衛'
+    UNION ALL SELECT '狩人', '名乗り'
+    UNION ALL SELECT '狩人', '結果報告'
+    UNION ALL SELECT '村人', '投票観察'
+    UNION ALL SELECT '人狼', '襲撃'
+    UNION ALL SELECT '人狼', '騙り'
+    UNION ALL SELECT '人狼', '偽報告'
+    UNION ALL SELECT '狂人', '扇動'
+    UNION ALL SELECT '狂人', '騙り'
+    UNION ALL SELECT '狂人', '偽報告'
+) v
+JOIN roles r ON r.name = v.role_name
+JOIN cards c ON c.name = v.card_name
+WHERE NOT EXISTS (
+    SELECT 1 FROM role_guaranteed_cards g WHERE g.role_id = r.id AND g.card_id = c.id
+);
