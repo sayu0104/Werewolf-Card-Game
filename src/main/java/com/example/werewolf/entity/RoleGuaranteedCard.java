@@ -7,20 +7,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "role_guaranteed_cards")
-public class RoleGuaranteedCard {
+@Entity // このクラスはDBと連携している
+@Table(name = "role_guaranteed_cards") // DBでは「role_guaranteed_cards」と扱い、保存すること
+public class RoleGuaranteedCard { // 役職それぞれの、毎ターン（昼）手札に保証されるカード
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id // 以下の変数に対してidが主キーであることを示す
+	@GeneratedValue(strategy = GenerationType.IDENTITY) // 自動的に値を生成すること（方法はDBにある自動採番機能）
 	private Long id;
 
-	@Column(name = "role_id", nullable = false)
+	@Column(name = "role_id", nullable = false) // 以下の変数に対して
 	private Long roleId;
 
 	@Column(name = "card_id", nullable = false)
 	private Long cardId;
 
+	// JPAが利用するための引数なしコンストラクタ
 	public RoleGuaranteedCard() {
 	}
 

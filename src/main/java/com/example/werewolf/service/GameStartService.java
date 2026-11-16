@@ -80,6 +80,7 @@ public class GameStartService { // ゲームの試合開始処理クラス
 		// ※assignRolesは中で保存まで済ませるので、戻り値は受け取らず呼ぶだけでよい
 
 		handService.dealGuaranteedCards(game);
+		// プレイヤーそれぞれに、役職ごとの保証枠のカードを配る
 
 		return game;
 		// 出来上がった Game（id入り・進行中）を、呼んだ相手に返す

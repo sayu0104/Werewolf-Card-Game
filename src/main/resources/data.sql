@@ -37,6 +37,7 @@ FROM (
 -- 同じ名前のカードが既にあれば入れない（二重挿入防止）
 WHERE NOT EXISTS (SELECT 1 FROM cards c WHERE c.name = v.name);
 
+-- 役職ごとの保証枠カード（毎ターン手札に用意する分）を投入
 INSERT INTO role_guaranteed_cards (role_id, card_id)
 SELECT r.id, c.id
 FROM (

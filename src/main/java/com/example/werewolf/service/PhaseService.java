@@ -14,7 +14,7 @@ public class PhaseService {
 	// ↑ この「GameRepository型の箱」を、この係の手元に持っておく宣言
 	// （中身は、コンストラクタでDIで受け取った"倉庫番"が入る）
 
-	//                          ↓ゲームの倉庫番（道具）
+	//                         ↓ 手札の係（HandService）
 	private final HandService handService;
 
 	public PhaseService(GameRepository gameRepository, ReportService reportService, HandService handService) {
@@ -41,10 +41,11 @@ public class PhaseService {
 			case MORNING -> {
 				game.setCurrentPhase(Phase.DAY);
 				reportService.recordAutoReports(game);
-					handService.dealGuaranteedCards(game);
+				handService.dealGuaranteedCards(game);
 			}
 			// MORNING（朝なら） → 昼（DAY）にする
 			// 名乗ったプレイヤーの自動報告をする
+			// プレイヤーそれぞれに、役職ごとの保証枠のカードを配る
 			
 			case DAY -> {
 				if (game.getDayNumber() == 1) {
