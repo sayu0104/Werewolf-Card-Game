@@ -25,6 +25,7 @@
 | cards | カードマスタ |
 | game_player_hands | プレイヤーの手札状態 |
 | role_guaranteed_cards | 役職ごとの保証枠カード（毎ターン手札に用意するカード）の対応表 |
+| deck_cards | 山札構成（1人あたりの基本カードと枚数） |
 | card_usage_logs | カード使用履歴 |
 | night_actions | 夜フェーズの行動（襲撃・護衛・占い） |
 | votes | 投票履歴 |
@@ -126,7 +127,7 @@
 | id | INT | PK, AUTO_INCREMENT | |
 | game_player_id | INT | FK -> game_players.id, NOT NULL | |
 | card_id | INT | FK -> cards.id, NOT NULL | |
-| status | VARCHAR(20) | NOT NULL | in_hand / used / discarded / held（希少カードの保留状態） |
+| status | VARCHAR(20) | NOT NULL | in_deck（山札）/ in_hand / used / discarded / held（希少カードの保留状態） |
 | acquired_at_day | INT | NOT NULL | 何日目に手札に加わったか |
 
 ### 3.8.1 role_guaranteed_cards（役職→保証枠カードの対応表）
@@ -137,6 +138,15 @@
 | card_id | INT | FK -> cards.id, NOT NULL | |
 
 > どの役職がどの保証枠を持つかは `cards.required_role_id` では表せない（共有カードはNULL）ため、この表でデータとして持つ。保証枠は毎ターン手札（in_hand）に用意する。カウンター（is_rare=true）は保証枠に含めない。
+
+### 3.8.2 deck_cards（山札構成）
+| カラム名 | 型 | 制約 | 説明 |
+|---|---|---|---|
+| id | INT | PK, AUTO_INCREMENT | |
+| card_id | INT | FK -> cards.id, NOT NULL | |
+| copies | INT | NOT NULL | 山札に入れる枚数（1人あたり） |
+
+> ゲーム開始時、各プレイヤーにこの構成どおりの山札（game_player_hands の status=in_deck）を作る。基本カード6種×3枚＝18枚（仮値）。毎ターン、手札のランダム枠（保証枠以外）を捨て札にして山札から5枚（仮値）引き直す。
 
 ### 3.9 card_usage_logs（カード使用履歴）
 | カラム名 | 型 | 制約 | 説明 |

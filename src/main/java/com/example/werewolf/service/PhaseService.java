@@ -42,6 +42,7 @@ public class PhaseService {
 				game.setCurrentPhase(Phase.DAY);
 				reportService.recordAutoReports(game);
 				handService.dealGuaranteedCards(game);
+				handService.drawRandomCards(game);
 			}
 			// MORNING（朝なら） → 昼（DAY）にする
 			// 名乗ったプレイヤーの自動報告をする
