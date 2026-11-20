@@ -60,3 +60,11 @@ JOIN cards c ON c.name = v.card_name
 WHERE NOT EXISTS (
     SELECT 1 FROM role_guaranteed_cards g WHERE g.role_id = r.id AND g.card_id = c.id
 );
+
+INSERT INTO deck_cards (card_id, copies)
+SELECT c.id, 3
+FROM cards c
+WHERE c.name IN ('疑う（弱）', '疑う（中）', '疑う（強）', '擁護（弱）', '擁護（中）', '擁護（強）')
+AND NOT EXISTS (
+    SELECT 1 FROM deck_cards d WHERE d.card_id = c.id
+);
