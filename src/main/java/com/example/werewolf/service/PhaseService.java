@@ -47,6 +47,7 @@ public class PhaseService {
 			// MORNING（朝なら） → 昼（DAY）にする
 			// 名乗ったプレイヤーの自動報告をする
 			// プレイヤーそれぞれに、役職ごとの保証枠のカードを配る
+			// 山札から手札へ、カードをランダムに5枚引く
 			
 			case DAY -> {
 				if (game.getDayNumber() == 1) {

@@ -61,6 +61,7 @@ WHERE NOT EXISTS (
     SELECT 1 FROM role_guaranteed_cards g WHERE g.role_id = r.id AND g.card_id = c.id
 );
 
+-- 山札に積む基本カード＝疑う/擁護を各3枚
 INSERT INTO deck_cards (card_id, copies)
 SELECT c.id, 3
 FROM cards c

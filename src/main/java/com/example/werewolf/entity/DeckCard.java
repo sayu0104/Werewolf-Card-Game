@@ -9,18 +9,19 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "deck_cards")
-public class DeckCard {
+public class DeckCard { // 山札用のカード（保証枠のカードは含まない）
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id // 以下の変数に対してidが主キーであることを示す
+	@GeneratedValue(strategy = GenerationType.IDENTITY) // 自動的に値を生成すること（方法はDBにある自動採番機能）
 	private Long id;
 
 	@Column(name = "card_id", nullable = false)
 	private Long cardId;
 
 	@Column(nullable = false)
-	private Integer copies;
+	private Integer copies; // ※基本カード（疑う/擁護）をコピーして増やし、配るためのもの
 
+	// JPAが利用するための引数なしコンストラクタ
 	public DeckCard() {
 	}
 
