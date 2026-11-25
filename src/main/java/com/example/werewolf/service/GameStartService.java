@@ -79,8 +79,13 @@ public class GameStartService { // ゲームの試合開始処理クラス
 		
 		// ※assignRolesは中で保存まで済ませるので、戻り値は受け取らず呼ぶだけでよい
 
-		handService.dealGuaranteedCards(game);
-		// プレイヤーそれぞれに、役職ごとの保証枠のカードを配る
+		// プレイヤーそれぞれに、
+		handService.createDecks(game);
+		handService.dealGuaranteedCards(game);		
+		handService.drawRandomCards(game);
+		// 山札を用意する
+		// 役職ごとの保証枠のカードを配る
+		// 山札から手札へ、カードをランダムに5枚引く
 
 		return game;
 		// 出来上がった Game（id入り・進行中）を、呼んだ相手に返す
